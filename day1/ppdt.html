@@ -75,7 +75,7 @@
     <span style="flex:1"></span>
     <button id="skip" class="ghost">Next phase</button>
   </div>
-  <div class="bar" style="margin-top:10px"><i id="bar" style="width:100%"></i></div>
+  <div class="bar" style="margin-top:10px"><i id="bar"></i></div>
 
   <div class="card stage hidden" id="stage2">
     <h3>Main character</h3>
@@ -181,7 +181,7 @@ $("begin").onclick = () => {
 function tick(left, total){
   $("clock").textContent = fmtClock(left);
   $("clock").classList.toggle("low", left <= 5 || (total > 60 && left <= 30));
-  $("bar").style.width = (total ? (left/total*100) : 0) + "%";
+  $("bar").style.transform = "scaleX(" + (total ? left/total : 0) + ")";
 }
 
 function runPhase(){

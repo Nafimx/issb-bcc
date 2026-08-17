@@ -88,7 +88,7 @@
       <button id="flag" class="ghost">☆ Review</button>
       <button id="finish" class="secondary">Submit</button>
     </div>
-    <div class="bar" style="margin-top:10px"><i id="bar" style="width:0%"></i></div>
+    <div class="bar" style="margin-top:10px"><i id="bar"></i></div>
 
     <div class="card qcard">
       <span class="pill" id="cat">Reasoning</span>
@@ -186,7 +186,7 @@ function render(){
   $("qno").textContent = "Q " + (cur+1) + " / " + questions.length;
   $("cat").textContent = q.cat;
   $("qtext").textContent = q.q;
-  $("bar").style.width = ((cur+1)/questions.length*100) + "%";
+  $("bar").style.transform = "scaleX(" + ((cur+1)/questions.length) + ")";
   $("flag").textContent = flags[cur] ? "★ Marked" : "☆ Review";
   const box = $("opts");
   box.innerHTML = "";
