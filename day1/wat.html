@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Word Association Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608172121">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608172125a">
 <style>
 .sectionline{display:flex;gap:10px;margin:14px 0 4px;flex-wrap:wrap}
 .sec{flex:1;min-width:150px;padding:11px 12px;border-radius:11px;border:1px solid var(--line);background:var(--card);
@@ -89,8 +89,8 @@ At ISSB the words come about every fifteen seconds. Many are negative on purpose
   <button class="fcancel" id="fcancel">Cancel</button>
 </div>
 
-<script src="../assets/js/core.js?v=202608172121"></script>
-<script src="../assets/js/wat-words.js?v=202608172121"></script>
+<script src="../assets/js/core.js?v=202608172125a"></script>
+<script src="../assets/js/wat-words.js?v=202608172125a"></script>
 <script>
 (function(){
 const {$, el, esc, shuffle, Countdown, store} = ISSB;
@@ -175,11 +175,41 @@ function runSection(which){
   }
 }
 
+let watchdog = null;
+
 function enterFocus(){
   $("focus").classList.remove("hidden");
   document.body.style.overflow = "hidden";
+  window.ISSB_BUSY = true;                 // the page must not reload under a running drill
+  clearInterval(watchdog);
+  /* If the screen is ever showing without a word, or the clock stops moving,
+     recover instead of leaving the cadet staring at a blank screen. */
+  let lastClock = null, stalled = 0;
+  watchdog = setInterval(() => {
+    if ($("focus").classList.contains("hidden")) return;
+    const word = $("fword").textContent.trim();
+    const now = $("fclock").textContent.trim();
+    if (!word || !now){ recover("blank"); return; }
+    stalled = (now === lastClock) ? stalled + 1 : 0;
+    lastClock = now;
+    if (stalled >= 4) recover("stalled");
+  }, 1000);
 }
+
+function recover(why){
+  clearInterval(watchdog);
+  if (!section){ exitFocus(); return; }
+  const which = section;
+  clock.stop();
+  index = Math.max(-1, index - 1);
+  section = which;
+  showNext();                              // put a word back up and restart the clock
+  $("status").textContent = "Recovered a " + why + " screen and continued.";
+}
+
 function exitFocus(){
+  clearInterval(watchdog);
+  window.ISSB_BUSY = false;
   $("focus").classList.add("hidden");
   document.body.style.overflow = "";
 }
