@@ -158,11 +158,11 @@ function exitFocus(){
   document.body.style.overflow = "";
 }
 
-$("start").onclick = () => ISSB.askCadet("Word Association Test", () => {
+$("start").onclick = () => {
   if (finished || !batch.length) makeBatch();
   enterFocus();
   showNext();
-});
+};
 
 $("fcancel").onclick = () => {
   clock.stop();

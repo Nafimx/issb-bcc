@@ -159,7 +159,7 @@ batchSel.onchange = refreshBest;
 refreshBest();
 
 /* ---- start ---- */
-$("begin").onclick = () => ISSB.askCadet("Screening 1 — IQ Test", startTest);
+$("begin").onclick = startTest;
 
 function startTest(){
   questions = IQGen.buildBatch(Number(batchSel.value));
@@ -265,8 +265,7 @@ function submit(){
   $("result").classList.remove("hidden");
   $("score").innerHTML = score + "<small>OUT OF " + questions.length + "</small>";
   const attempted = answers.filter(a => a > -1).length;
-  $("summary").innerHTML =
-    '<div class="cadet-tag">' + esc(ISSB.cadetLine()) + "</div>" +
+  $("summary").textContent =
     "Batch " + key + " · attempted " + attempted + " · correct " + score +
     " · wrong " + (attempted - score) + " · skipped " + (questions.length - attempted);
 

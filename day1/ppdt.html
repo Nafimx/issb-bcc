@@ -195,7 +195,7 @@ function resetChars(){
 }
 $("addChar").onclick = addChar;
 
-$("begin").onclick = () => ISSB.askCadet("Screening 2 — PPDT", startPpdt);
+$("begin").onclick = startPpdt;
 
 function startPpdt(){
   const chosen = Number(sel.value);
@@ -263,7 +263,7 @@ function finish(){
   const acts = [1, 2, 3].map(i => $("act" + i).value.trim()).filter(Boolean);
 
   $("recap").innerHTML =
-    '<div class="cadet-tag" style="margin-bottom:8px">' + esc(ISSB.cadetLine()) + " · Picture " + scene.id + "</div>" +
+    '<div class="small muted" style="margin-bottom:8px">Picture ' + scene.id + "</div>" +
     '<table class="sheet-tbl">' +
     "<tr><th>Spot Box</th><th>Action Box</th></tr>" +
     '<tr><td><div style="display:flex;gap:22px;flex-wrap:wrap">' +

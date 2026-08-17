@@ -21,8 +21,6 @@ Live: https://issb-bcc.vercel.app
 
 The dashboard lays out the full four-day programme. Every drill is live; only "Screening Result" stays as an information card, because it is a board event rather than something to practise.
 
-Every segment asks for name, college and cadet number before it starts; the details are kept in `localStorage` on that device and pre-filled next time.
-
 ## IQ question bank
 
 - `assets/js/iq-curated.js` — 325 hand-written verbal items. Situational and General items are kept there for the future SRT drill but are not drawn into IQ batches: the screening test is reasoning only.

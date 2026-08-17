@@ -85,7 +85,6 @@
 <section id="review" class="hidden">
   <div class="card">
     <h2>Your SRT set</h2>
-    <div id="cadetTag" class="cadet-tag"></div>
     <div id="summary" class="small muted" style="margin-top:6px"></div>
     <p class="small muted" style="margin-top:10px">Compare each of your answers with the model. A good SRT answer is short, acts first, uses the people and things actually available, and finishes the job.</p>
     <div class="row no-print" style="margin-top:16px">
@@ -108,7 +107,7 @@ ISSB.mountHeader("SRT — Situation Reaction Test", "60 situations · 30 minutes
 
 let set = [], answers = [], cur = 0, clock = null;
 
-$("begin").onclick = () => ISSB.askCadet("Situation Reaction Test", start);
+$("begin").onclick = start;
 
 function start(){
   const n = Number($("count").value);
@@ -163,7 +162,6 @@ function submit(){
   const done = answers.filter(a => a).length;
   $("test").classList.add("hidden");
   $("review").classList.remove("hidden");
-  $("cadetTag").textContent = ISSB.cadetLine();
   $("summary").textContent = "Attempted " + done + " of " + set.length + " situations.";
   const box = $("revList");
   box.innerHTML = "";

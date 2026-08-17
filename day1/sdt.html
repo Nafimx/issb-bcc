@@ -64,7 +64,6 @@
 <section id="review" class="hidden">
   <div class="card">
     <h2>Your self description</h2>
-    <div id="cadetTag" class="cadet-tag"></div>
     <div id="summary" class="small muted" style="margin-top:6px"></div>
     <div id="revList"></div>
     <h3 style="margin-top:22px">Self check</h3>
@@ -115,7 +114,7 @@ SDT_PARTS.forEach(p => {
   });
 });
 
-$("begin").onclick = () => ISSB.askCadet("Self Description Test", start);
+$("begin").onclick = start;
 
 function start(){
   SDT_PARTS.forEach(p => { $("p_" + p.id).value = ""; $("p_" + p.id).readOnly = false; $("wc_" + p.id).textContent = "0 words"; });
@@ -148,7 +147,6 @@ function submit(){
   SDT_PARTS.forEach(p => $("p_" + p.id).readOnly = true);
   $("test").classList.add("hidden");
   $("review").classList.remove("hidden");
-  $("cadetTag").textContent = ISSB.cadetLine();
   let total = 0;
   const box = $("revList");
   box.innerHTML = "";

@@ -141,65 +141,11 @@
     host.insertBefore(head, host.firstChild);
   }
 
-  /* ---------- cadet identity ----------
-     Every segment asks for name, college and cadet number before it starts.
-     The last entry is remembered on the device and pre-filled, so it is one
-     Enter press on repeat attempts. */
-  function getCadet() {
-    return store.get("cadet", { name: "", college: "", number: "" });
-  }
-  function cadetLine() {
-    const c = getCadet();
-    if (!c.name) return "";
-    return c.name + " · " + c.college + " · Cadet No " + c.number;
-  }
-
-  function askCadet(segment, onReady) {
-    const c = getCadet();
-    const wrap = el("div", "gate");
-    wrap.innerHTML =
-      '<div class="gate-card">' +
-      '<h2>Before you begin</h2>' +
-      '<p class="muted small">' + esc(segment) + " — fill in your details. They stay on this device only.</p>" +
-      '<div class="field"><label for="gName">Full name</label>' +
-      '<input type="text" id="gName" autocomplete="name" value="' + esc(c.name) + '" placeholder="e.g. Nahian Fattah"></div>' +
-      '<div class="field"><label for="gCollege">College name</label>' +
-      '<input type="text" id="gCollege" value="' + esc(c.college) + '" placeholder="e.g. Barishal Cadet College"></div>' +
-      '<div class="field"><label for="gNumber">Cadet number</label>' +
-      '<input type="text" id="gNumber" value="' + esc(c.number) + '" placeholder="e.g. 2189"></div>' +
-      '<p class="gate-err small" id="gErr"></p>' +
-      '<div class="row"><button id="gGo">Continue</button>' +
-      '<button id="gCancel" class="secondary">Cancel</button></div>' +
-      "</div>";
-    document.body.appendChild(wrap);
-
-    const close = () => wrap.remove();
-    const go = () => {
-      const cadet = {
-        name: wrap.querySelector("#gName").value.trim(),
-        college: wrap.querySelector("#gCollege").value.trim(),
-        number: wrap.querySelector("#gNumber").value.trim(),
-      };
-      if (!cadet.name || !cadet.college || !cadet.number) {
-        wrap.querySelector("#gErr").textContent = "All three fields are required.";
-        return;
-      }
-      store.set("cadet", cadet);
-      close();
-      onReady(cadet);
-    };
-    wrap.querySelector("#gGo").onclick = go;
-    wrap.querySelector("#gCancel").onclick = close;
-    wrap.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") go();
-      if (e.key === "Escape") close();
-    });
-    setTimeout(() => wrap.querySelector(c.name ? "#gGo" : "#gName").focus(), 30);
-  }
+  /* any name/college/number kept by an older version is no longer used */
+  store.del("cadet");
 
   global.ISSB = {
     $, el, esc,
-    getCadet, cadetLine, askCadet,
     mulberry32, randInt, pick, seededShuffle, shuffle,
     Countdown, fmtClock,
     store, mountHeader,

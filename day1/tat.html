@@ -85,7 +85,6 @@
 <section id="review" class="hidden">
   <div class="card">
     <h2>Your TAT set</h2>
-    <div id="cadetTag" class="cadet-tag" style="margin-bottom:6px"></div>
     <p class="small muted">Nothing is auto-marked. Read your own set: the same hero should appear across the stories — resourceful, positive, acting himself.</p>
     <div id="revList"></div>
     <div class="row no-print" style="margin-top:18px">
@@ -108,7 +107,7 @@ ISSB.mountHeader("TAT — Thematic Apperception Test", "11 pictures + 1 blank ·
 const VIEW = 30;
 let slides = [], i = 0, phase = 0, clock = null, writeSecs = 240, stories = [];
 
-$("begin").onclick = () => ISSB.askCadet("Thematic Apperception Test", start);
+$("begin").onclick = start;
 
 function start(){
   const n = Number($("count").value);
@@ -173,7 +172,6 @@ function finish(){
   clock.stop();
   $("test").classList.add("hidden");
   $("review").classList.remove("hidden");
-  $("cadetTag").textContent = ISSB.cadetLine();
   const box = $("revList");
   box.innerHTML = "";
   slides.forEach((s, k) => {

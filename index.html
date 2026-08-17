@@ -111,16 +111,13 @@
     <a href="https://issb-bd.org/preparatory-guide" target="_blank" rel="noopener">issb-bd.org/preparatory-guide</a>.
     Reporting at the testing hall is by 07:00 hours on Day 1, followed by the welcome address.</p>
 
-  <p class="note" id="whoNote">Built for the cadets and ex-cadets preparing for BMA. Everything runs in your browser &mdash; nothing is uploaded, and your details and attempts are stored only on this device.</p>
+  <p class="note">Built for the cadets and ex-cadets preparing for BMA. Everything runs in your browser &mdash; nothing is uploaded, and your attempts are stored only on this device.</p>
 </div>
 
 <script src="assets/js/core.js"></script>
 <script>
 ISSB.mountHeader("ISSB Prep — Barishal Cadet College", "Day-1 screening drills · practice board style");
 
-const who = ISSB.cadetLine();
-if (who) ISSB.$("whoNote").insertAdjacentHTML("beforebegin",
-  '<p class="note" style="color:var(--ink-2)">Signed in on this device as <b>' + ISSB.esc(who) + "</b></p>");
 
 const iq = ISSB.store.get("iq.best", {});
 const iqKeys = Object.keys(iq);
