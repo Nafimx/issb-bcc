@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Word Association Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css">
+<link rel="stylesheet" href="../assets/css/app.css?v=msxqi4vq">
 <style>
 .sectionline{display:flex;gap:10px;margin:14px 0 4px;flex-wrap:wrap}
 .sec{flex:1;min-width:150px;padding:11px 12px;border-radius:11px;border:1px solid var(--line);background:var(--card);
@@ -84,13 +84,13 @@ At ISSB the words come about every fifteen seconds. Many are negative on purpose
 
 <!-- focus mode -->
 <div class="focus hidden" id="focus">
-  <div class="fclock timer" id="fclock">10</div>
-  <div class="fword" id="fword">Ready</div>
+  <div class="fclock timer" id="fclock"></div>
+  <div class="fword" id="fword"></div>
   <button class="fcancel" id="fcancel">Cancel</button>
 </div>
 
-<script src="../assets/js/core.js"></script>
-<script src="../assets/js/wat-words.js"></script>
+<script src="../assets/js/core.js?v=msxqi4vq"></script>
+<script src="../assets/js/wat-words.js?v=msxqi4vq"></script>
 <script>
 (function(){
 const {$, el, esc, shuffle, Countdown, store} = ISSB;
@@ -104,6 +104,7 @@ let batch = [], section = null, index = -1, clock = null;
 const done = { en: false, bn: false };
 
 function pool(src, hardCount, bn){
+  if (!Array.isArray(src) || !src.length) throw new Error("word list did not load");
   const list = $("mix").value === "hard" ? src.slice(0, hardCount) : src;
   return shuffle(list).slice(0, PER_SECTION).map(x => ({...x, bn: bn}));
 }
@@ -159,12 +160,19 @@ clock = new Countdown({
 });
 
 function runSection(which){
-  if (!batch.en) makeBatch();
-  section = which;
-  index = -1;
-  markSections();
-  enterFocus();
-  showNext();
+  try {
+    if (!batch || !batch.en || !batch.en.length) makeBatch();
+    if (!batch[which] || !batch[which].length) throw new Error("word list is empty");
+    section = which;
+    index = -1;
+    markSections();
+    showNext();          // put the first word up first…
+    enterFocus();        // …then show the screen, so it can never sit on a blank
+  } catch (err) {
+    section = null;
+    exitFocus();
+    $("status").textContent = "Could not start: " + err.message + " — press New batch, or reload the page.";
+  }
 }
 
 function enterFocus(){
@@ -218,7 +226,8 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") $("fcancel").click();
 });
 
-makeBatch();
+try { makeBatch(); }
+catch (err) { $("status").textContent = "Word list did not load — reload the page. (" + err.message + ")"; }
 })();
 </script>
 </body>
