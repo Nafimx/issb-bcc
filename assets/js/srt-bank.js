@@ -119,5 +119,32 @@ window.SRT_BANK = [
 {s:"He found that the shopkeeper was using false weights. He…",m:"…told him to correct it and reported him when he refused."},
 {s:"His younger sister was frightened of water. He…",m:"…took her to shallow water daily and taught her to swim step by step."},
 {s:"He was the last man left to finish a group task. He…",m:"…kept working until it was done."},
-{s:"He was praised publicly for his team's work. He…",m:"…thanked the board and named his team."}
+{s:"He was praised publicly for his team's work. He…",m:"…thanked the board and named his team."},
+
+/* Not every item ends with "He…". Some carry a different lead-in, and some are
+   complete statements where the whole reaction has to be written. */
+{s:"The rope broke while his group was crossing the ditch, so he…",m:"…halted the crossing, tied the two ends with a reef knot, tested it himself and resumed."},
+{s:"His section was pinned down by the umpire for a rule broken by another man, and he…",m:"…accepted the penalty, corrected the drill and led the section through the obstacle again."},
+{s:"The village elders would not listen to a young man's warning about the dam, therefore he…",m:"…took the imam and the schoolteacher with him, showed them the crack and had the village moved."},
+{s:"His mother fell ill on the night before his final examination, so he…",m:"…admitted her, arranged an attendant, revised whatever time allowed and sat the paper."},
+{s:"The store keys were left with him for the night and the lock was found broken in the morning, so he…",m:"…checked the stock against the register, reported the loss at once and asked for an enquiry."},
+{s:"Half his group wanted to abandon the task and the other half wanted to continue, therefore he…",m:"…proposed one simple plan with a time limit, got both sides to try it and finished the task."},
+{s:"He reached the ferry ghat and found the last boat had already left, so he…",m:"…hired a share of a country boat with other stranded passengers and informed home of the delay."},
+{s:"A senior asked him to sign a false attendance sheet, and he…",m:"…refused politely and offered to explain the true position himself."},
+{s:"During the night halt he found the sentry asleep at his post, so he…",m:"…woke him, took the post himself until relieved and reported it in the morning."},
+{s:"The only bridge was under water and forty families were waiting to cross, therefore he…",m:"…organised a rope crossing for the fit, sent the children and elderly by boat and called for army help."},
+{s:"He was handed a task ten minutes before the deadline, so he…",m:"…did the essential part first, delegated the rest and reported exactly what was finished."},
+{s:"His younger brother was caught cheating in the school examination, and he…",m:"…took him to the teacher himself, accepted the punishment with him and studied with him after that."},
+{s:"A fire broke out in the paddy store at midnight.",m:"He woke the neighbours, cut the power, made a water chain and saved the adjoining houses."},
+{s:"His group was given a task no one had done before and the men looked at him.",m:"He broke it into three steps, gave each man a job and started on the hardest step himself."},
+{s:"On the way to the board a cyclist was knocked down in front of him.",m:"He gave first aid, put him in a passing car for hospital, noted the number plate and went on."},
+{s:"The results were published and his name was not on the list.",m:"He collected his feedback points, listed the weak areas and began preparing for the next attempt the same week."},
+{s:"He was the youngest in a group of much older candidates.",m:"He respected their experience, spoke when he had something useful and worked harder than any of them."},
+{s:"His unit was ordered to move at two hours' notice.",m:"He packed the essential kit, checked his men's readiness, informed his family briefly and reported on time."},
+{s:"Money went missing from the group's common fund.",m:"He suggested an open count before everyone, made good the shortfall himself and had the fund kept under lock."},
+{s:"An officer wrongly praised him for another man's work in front of the group.",m:"He corrected it at once and named the man who had done it."},
+{s:"During the flood the relief boat could carry only half the waiting families.",m:"He sent the children, the sick and the elderly first and waited on the roof with the fit men for the next trip."},
+{s:"He found a classmate crying alone after the results.",m:"He sat with him, heard him out and helped him plan the re-take."},
+{s:"The group's plan was ready but the ground turned out completely different.",m:"He re-checked the ground, changed the plan in one minute and briefed the group again before starting."},
+{s:"He was told he was too short to make a good officer.",m:"He let his performance in the tasks answer it and kept working on his fitness."}
 ];

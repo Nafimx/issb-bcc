@@ -15,6 +15,10 @@
 /* the situation is the thing being read: it leads the answer box by ~1.5x */
 .sit{font-size:clamp(21px,3.2vw,27px);line-height:1.45;margin:8px 0 16px}
 .answer textarea{min-height:110px;font-size:17px}
+/* the answer continues the situation, so the lead-in sits with the writing box */
+.answerrow{display:flex;align-items:flex-start;gap:10px}
+.answerrow .lead{flex:none;padding:11px 0 0;font-size:17px;font-weight:700;color:var(--accent-2);white-space:nowrap}
+.answerrow .lead:empty{display:none}
 .hidden{display:none}
 .rev{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card-2)}
 .review{display:grid;gap:12px;margin-top:14px}
@@ -36,7 +40,7 @@
 
 <section id="setup" class="card">
   <h2>Situation Reaction Test</h2>
-  <p class="muted small">Sixty situations, thirty minutes — about thirty seconds each. Write what you would <b>do</b>, not what you would feel. One line is enough: act first, then inform, then follow up. The clock runs for the whole set, so do not stall on one situation.</p>
+  <p class="muted small">Sixty situations, thirty minutes — about thirty seconds each. Each item is an <b>incomplete sentence that you finish</b>: most trail off on a lead-in such as &ldquo;He…&rdquo; or &ldquo;so he…&rdquo;, and a few are complete statements where you write the whole reaction. Write what you would <b>do</b>, not what you would feel. One line is enough: act first, then inform, then follow up. The clock runs for the whole set, so do not stall on one situation.</p>
   <div class="grid-2" style="margin:16px 0">
     <div class="field">
       <label for="count">Situations</label>
@@ -72,8 +76,11 @@
     <span class="pill">Situation</span>
     <p class="sit" id="sit"></p>
     <div class="field answer">
-      <label for="ans">Your reaction</label>
-      <textarea id="ans" placeholder="…what he did."></textarea>
+      <label for="ans" id="ansLabel">Finish the sentence</label>
+      <div class="answerrow">
+        <span class="lead" id="lead"></span>
+        <textarea id="ans" placeholder="…what he did."></textarea>
+      </div>
     </div>
     <div class="row" style="margin-top:14px">
       <button id="prev" class="secondary">Previous</button>
@@ -133,9 +140,25 @@ function start(){
   window.scrollTo(0,0);
 }
 
+/* Items are incomplete sentences. Most trail off on a lead-in ("He…", "so he…"),
+   which is shown beside the writing box so the cadet finishes that sentence.
+   Some items are complete statements — then there is no lead-in and the whole
+   reaction is written. */
+function leadOf(text){
+  const m = text.match(/([^.?!]{1,80})…\s*$/);        // the tail of the last sentence
+  if (!m) return "";                                  // a complete statement, nothing to finish
+  const tail = m[1].split(/,\s*/).pop().trim();       // "…the ditch, so he" → "so he"
+  const words = tail.split(/\s+/);
+  return words.slice(-4).join(" ");                   // keep the lead-in short
+}
+
 function render(){
   $("qno").textContent = (cur+1) + " / " + set.length;
   $("sit").textContent = set[cur].s;
+  const lead = leadOf(set[cur].s);
+  $("lead").textContent = lead ? lead + " …" : "";
+  $("ansLabel").textContent = lead ? "Finish the sentence" : "Your reaction";
+  $("ans").placeholder = lead ? "…what he did next." : "What he did.";
   $("ans").value = answers[cur];
   $("bar").style.transform = "scaleX(" + ((cur+1)/set.length) + ")";
   $("prev").disabled = cur === 0;
@@ -166,11 +189,14 @@ function submit(){
   const box = $("revList");
   box.innerHTML = "";
   set.forEach((item, k) => {
+    const lead = leadOf(item.s);
+    const mine = answers[k]
+      ? (lead ? lead + " " + answers[k] : answers[k])
+      : "— not attempted —";
     box.appendChild(el("div", "rev",
       '<div class="rq">' + (k+1) + ". " + esc(item.s) + "</div>" +
-      '<div class="ra' + (answers[k] ? "" : " skipped") + '">' +
-      esc(answers[k] || "— not attempted —") + "</div>" +
-      '<div class="model"><b>Model:</b> ' + esc(item.m) + "</div>"));
+      '<div class="ra' + (answers[k] ? "" : " skipped") + '">' + esc(mine) + "</div>" +
+      '<div class="model"><b>Model:</b> ' + esc(lead ? lead + " " + item.m.replace(/^…\s*/, "") : item.m) + "</div>"));
   });
   store.set("srt.sets", store.get("srt.sets", 0) + 1);
   window.scrollTo(0,0);
