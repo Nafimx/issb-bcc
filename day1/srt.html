@@ -9,15 +9,16 @@
 <style>
 .topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.topbar .timer{font-size:24px}
-.topbar .qno{font-weight:700}
+.topbar .timer{font-size:22px}
+.topbar .qno{font-weight:700;font-size:15px}
 .topbar .spacer{flex:1}
-.sit{font-size:clamp(18px,2.6vw,22px);line-height:1.55;margin:6px 0 14px}
+/* the situation is the thing being read: it leads the answer box by ~1.5x */
+.sit{font-size:clamp(21px,3.2vw,27px);line-height:1.45;margin:8px 0 16px}
 .answer textarea{min-height:110px;font-size:17px}
 .hidden{display:none}
 .rev{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card-2)}
 .review{display:grid;gap:12px;margin-top:14px}
-.rev .rq{font-weight:600;line-height:1.5;margin-bottom:7px}
+.rev .rq{font-weight:600;line-height:1.45;margin-bottom:9px;font-size:20px}
 .rev .ra{line-height:1.6;font-size:16px}
 .rev .model{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);color:var(--accent-2);font-size:16px;line-height:1.6}
 .rev .skipped{color:var(--danger)}
