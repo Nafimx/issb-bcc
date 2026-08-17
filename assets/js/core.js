@@ -144,8 +144,17 @@
   /* any name/college/number kept by an older version is no longer used */
   store.del("cadet");
 
+  /* Compatibility shims. A cadet may still be holding a cached copy of a page
+     from before the identity gate was removed; those pages call askCadet() and
+     cadetLine(). Without these they throw and the Start button does nothing.
+     The shim just runs the drill straight away. */
+  const askCadet = (segment, onReady) => { if (typeof onReady === "function") onReady(); };
+  const cadetLine = () => "";
+  const getCadet = () => ({ name: "", college: "", number: "" });
+
   global.ISSB = {
     $, el, esc,
+    askCadet, cadetLine, getCadet,
     mulberry32, randInt, pick, seededShuffle, shuffle,
     Countdown, fmtClock,
     store, mountHeader,
