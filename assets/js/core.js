@@ -139,6 +139,8 @@
         : "");
     const host = document.querySelector(".wrap") || document.body;
     host.insertBefore(head, host.firstChild);
+    const stamp = el("div", "build-stamp no-print", "build " + BUILD);
+    head.appendChild(stamp);
   }
 
   /* any name/college/number kept by an older version is no longer used */
@@ -152,7 +154,28 @@
   const cadetLine = () => "";
   const getCadet = () => ({ name: "", college: "", number: "" });
 
+  /* Self-heal a stale page. Browsers on slow mobile connections were holding an
+     old copy of a drill and reporting it as broken. Each build carries a stamp;
+     if the server is serving a newer one, reload once (guarded, never loops). */
+  const BUILD = "202608172121";
+  function checkBuild() {
+    fetch("/assets/build.json", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data || !data.build || data.build === BUILD) return;
+        const key = "issb.reloaded." + data.build;
+        try {
+          if (sessionStorage.getItem(key)) return;
+          sessionStorage.setItem(key, "1");
+        } catch (e) { return; }
+        location.reload();
+      })
+      .catch(() => {});
+  }
+  if (typeof fetch === "function") setTimeout(checkBuild, 800);
+
   global.ISSB = {
+    BUILD,
     $, el, esc,
     askCadet, cadetLine, getCadet,
     mulberry32, randInt, pick, seededShuffle, shuffle,
