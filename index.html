@@ -28,6 +28,16 @@
 </style>
 </head>
 <body>
+
+<div class="modal hidden" id="notice">
+  <div class="modal-card">
+    <h2>Before you start</h2>
+    <p><span class="rec">Recommended &mdash; IQ, WAT, SRT.</span></p>
+    <p>Other segments are in the process for making better.</p>
+    <button id="noticeOk">Got it</button>
+  </div>
+</div>
+
 <div class="wrap">
 
   <div class="hero">
@@ -117,6 +127,18 @@
 <script src="assets/js/core.js"></script>
 <script>
 ISSB.mountHeader("ISSB Prep — Barishal Cadet College", "Day-1 screening drills · practice board style");
+
+/* which drills are ready, shown once per device */
+(function(){
+  const notice = ISSB.$("notice");
+  if (ISSB.store.get("notice.seen", false)) return;
+  notice.classList.remove("hidden");
+  const close = () => { notice.classList.add("hidden"); ISSB.store.set("notice.seen", true); };
+  ISSB.$("noticeOk").onclick = close;
+  notice.addEventListener("click", (e) => { if (e.target === notice) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  setTimeout(() => ISSB.$("noticeOk").focus(), 30);
+})();
 
 
 const iq = ISSB.store.get("iq.best", {});
