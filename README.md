@@ -9,21 +9,24 @@ Live: https://issb-bcc.vercel.app
 
 | Drill | Page | Notes |
 |---|---|---|
-| Screening 1 — IQ Test | `day1/iq.html` | 24 batches × 100 questions, board-style 30-minute timing, per-category breakdown and explanations |
+| Intelligence Test | `day1/iq.html` | 24 batches × 100 questions, 5 per category, 30-minute standard timing, per-category breakdown, full answer key with explanations |
 | Screening 2 — PPDT | `day1/ppdt.html` | 40 hazy pictures. 30s observe → 30s age/sex/mood → 30s action → 4 min story, auto-advancing |
 | Word Association Test | `day1/wat.html` | 50 words per batch, English + Bangla, weighted to hard/negative words, model sentences for review |
 
-Day 2, 3 and 4 tiles are greyed out on the dashboard as "Coming Soon".
+The dashboard lays out the full Day-1 sequence — Intelligence Test, PPDT, Screening Result, TAT, WAT, SRT, SDT — with TAT, SRT and SDT greyed out, plus Day 2/3/4 as Coming Soon.
+
+Every segment asks for name, college and cadet number before it starts; the details are kept in `localStorage` on that device and pre-filled next time.
 
 ## IQ question bank
 
-- `assets/js/iq-curated.js` — 260 hand-written verbal items (synonym, antonym, one-word substitution,
-  jumbled words, spelling, verbal analogy, odd-one-out, logic, situational, general awareness).
+- `assets/js/iq-curated.js` — 325 hand-written verbal items. Situational and General items are kept there for the future SRT drill but are not drawn into IQ batches: the screening test is reasoning only.
 - `assets/js/iq-gen.js` — 20 procedural generators (number/letter series, coding-decoding, blood relations,
   direction sense, ranking, calendar, clock, ages, work, speed, percentage, ratio, average, arithmetic).
   **Every generated answer is computed, never hand-typed**, so a key cannot be wrong.
 - `buildBatch(n)` seeds a `mulberry32` RNG with the batch number, so **batch N is always the same
   100 questions for everyone** — two cadets can compare scores on the same batch.
+- Every batch holds **exactly 5 questions from each of the 20 categories** (`PER_CAT` in `iq-gen.js`),
+  so the mix never drifts between batches. Across the 24 batches that is 2,341 distinct questions.
 - To add more batches, raise `BATCH_COUNT` in `assets/js/iq-gen.js`. Nothing else changes.
 
 ## PPDT pictures

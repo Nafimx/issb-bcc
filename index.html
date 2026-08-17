@@ -12,57 +12,75 @@
 .hero h2{font-size:clamp(26px,5.5vw,38px);margin:0 0 10px;letter-spacing:-.5px}
 .hero p{color:var(--ink-2);margin:0 auto;max-width:58ch;line-height:1.6}
 .section{margin:30px 0 10px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.section h3{font-size:13px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-3);margin:0}
+.section h3{font-size:14px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-3);margin:0}
 .section .line{flex:1;height:1px;background:var(--line)}
 .cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
 .tile{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);
   border-radius:16px;padding:20px;transition:transform .12s ease,border-color .12s ease}
 .tile:hover{transform:translateY(-2px);border-color:var(--accent)}
 .tile .ico{font-size:24px;line-height:1;margin-bottom:12px}
-.tile h4{margin:0 0 6px;font-size:18px}
-.tile p{margin:0;color:var(--ink-2);font-size:14px;line-height:1.55}
+.tile h4{margin:0 0 6px;font-size:20px}
+.tile p{margin:0;color:var(--ink-2);font-size:16px;line-height:1.55}
 .tile .foot{margin-top:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .tile.locked{opacity:.5;pointer-events:none;filter:saturate(.4)}
-.stat{font-size:12px;color:var(--ink-3)}
-.note{margin-top:32px;font-size:13px;color:var(--ink-3);line-height:1.6;text-align:center}
+.stat{font-size:14px;color:var(--ink-3)}
+.note{margin-top:32px;font-size:15px;color:var(--ink-3);line-height:1.6;text-align:center}
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <div class="hero">
-    <h2>ISSB Day-1 Preparation</h2>
-    <p>Screening drills for the polapan of Barishal Cadet College. Practise the IQ test, PPDT and Word Association exactly the way they are run on the board &mdash; timed, unassisted, one attempt at a time.</p>
+    <h2>Screening test for the Polapains of Cadet Colleges</h2>
+    <p>Practice the IQ test, PPDT, WAT &amp; so on exactly the way they are run on the ISSB &mdash; timed, unassisted, one attempt at a time.</p>
   </div>
 
-  <div class="section"><h3>Screening &mdash; First Segment</h3><div class="line"></div></div>
+  <div class="section"><h3>Day 1 &mdash; Screening (First Segment)</h3><div class="line"></div></div>
   <div class="cards">
     <a class="tile" href="day1/iq.html">
       <div class="ico">🧠</div>
-      <h4>Screening 1 &mdash; IQ Test</h4>
-      <p>100 questions per batch, 24 fixed batches. Number and letter series, coding, blood relations, direction, ranking, arithmetic and verbal reasoning.</p>
+      <h4>1 &middot; Intelligence Test</h4>
+      <p>Evaluates logical reasoning and problem-solving. 100 questions per batch, 24 fixed batches, five questions from each of the 20 screening categories.</p>
       <div class="foot"><span class="pill live">Live</span><span class="stat" id="statIq"></span></div>
     </a>
     <a class="tile" href="day1/ppdt.html">
       <div class="ico">🖼️</div>
-      <h4>Screening 2 &mdash; PPDT</h4>
-      <p>Blurred picture, 30s to observe, 30s for age/sex/mood, 30s for the action, then 4 minutes to write the story. 40 pictures.</p>
+      <h4>2 &middot; PPDT</h4>
+      <p>View a hazy picture for a limited time, then write a story on your perception. 30s observe, 30s character, 30s action, 4 minutes story. 40 pictures.</p>
       <div class="foot"><span class="pill live">Live</span><span class="stat" id="statPpdt"></span></div>
     </a>
+    <div class="tile locked">
+      <div class="ico">📋</div>
+      <h4>3 &middot; Screening Result</h4>
+      <p>Candidates who do not meet the required standard are screened out here and do not proceed to the tests below.</p>
+      <div class="foot"><span class="pill soon">On the board</span></div>
+    </div>
   </div>
 
   <div class="section"><h3>Day 1 &mdash; Psychological Tests</h3><div class="line"></div></div>
   <div class="cards">
+    <div class="tile locked">
+      <div class="ico">🎞️</div>
+      <h4>4 &middot; TAT</h4>
+      <p>Thematic Apperception Test &mdash; write stories on a series of pictures. Assesses imagination and emotional response.</p>
+      <div class="foot"><span class="pill soon">Coming Soon</span></div>
+    </div>
     <a class="tile" href="day1/wat.html">
       <div class="ico">⚡</div>
-      <h4>Word Association Test</h4>
-      <p>50 words per batch flashed on a timer, weighted towards hard and military words. Model positive sentences shown for review afterwards.</p>
+      <h4>5 &middot; WAT</h4>
+      <p>Word Association Test &mdash; spontaneous response to flashed words. 50 words per batch, weighted towards hard and military words.</p>
       <div class="foot"><span class="pill live">Live</span><span class="stat" id="statWat"></span></div>
     </a>
     <div class="tile locked">
-      <div class="ico">📝</div>
-      <h4>TAT &middot; SRT &middot; Self Description</h4>
-      <p>Thematic Apperception, Situation Reaction and Self Description drills.</p>
+      <div class="ico">🧭</div>
+      <h4>6 &middot; SRT</h4>
+      <p>Situation Reaction Test &mdash; decision-making and problem-solving through responses to hypothetical situations.</p>
+      <div class="foot"><span class="pill soon">Coming Soon</span></div>
+    </div>
+    <div class="tile locked">
+      <div class="ico">✍️</div>
+      <h4>7 &middot; SDT</h4>
+      <p>Self-Description Test &mdash; describe yourself as your parents, teachers, friends and you yourself see you.</p>
       <div class="foot"><span class="pill soon">Coming Soon</span></div>
     </div>
   </div>
@@ -89,12 +107,16 @@
     </div>
   </div>
 
-  <p class="note">Built for BCC ex-cadets and cadets preparing for BMA. Everything runs in your browser &mdash; nothing is uploaded, and your attempts are stored only on this device.</p>
+  <p class="note" id="whoNote">Built for the cadets and ex-cadets preparing for BMA. Everything runs in your browser &mdash; nothing is uploaded, and your details and attempts are stored only on this device.</p>
 </div>
 
 <script src="assets/js/core.js"></script>
 <script>
 ISSB.mountHeader("ISSB Prep — Barishal Cadet College", "Day-1 screening drills · practice board style");
+
+const who = ISSB.cadetLine();
+if (who) ISSB.$("whoNote").insertAdjacentHTML("beforebegin",
+  '<p class="note" style="color:var(--ink-2)">Signed in on this device as <b>' + ISSB.esc(who) + "</b></p>");
 
 const iq = ISSB.store.get("iq.best", {});
 const iqKeys = Object.keys(iq);

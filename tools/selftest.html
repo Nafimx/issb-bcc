@@ -46,10 +46,17 @@ check("Curated bank has items with 4 options each", () => {
 });
 
 for (let n = 1; n <= IQGen.BATCH_COUNT; n++){
-  check("Batch " + n + ": 100 unique questions, valid keys", () => {
+  check("Batch " + n + ": 100 questions, 5 per category, valid keys", () => {
     const b = IQGen.buildBatch(n);
-    if (b.length !== 100) return "length " + b.length;
-    if (new Set(b.map(q => q.q)).size !== 100) return "duplicate question text";
+    if (b.length !== IQGen.BATCH_SIZE) return "length " + b.length;
+    const keys = b.map(q => q.q + " ¦ " + [...q.options].sort().join("|"));
+    if (new Set(keys).size !== b.length) return "duplicate question";
+    const tally = {};
+    b.forEach(q => tally[q.cat] = (tally[q.cat] || 0) + 1);
+    if (Object.keys(tally).length !== IQGen.CATEGORIES.length) return "categories: " + Object.keys(tally).length;
+    for (const c of IQGen.CATEGORIES){
+      if (tally[c.name] !== IQGen.PER_CAT) return c.name + " = " + tally[c.name];
+    }
     for (const q of b){
       if (!Array.isArray(q.options) || q.options.length !== 4) return "option count: " + q.q;
       if (new Set(q.options).size !== 4) return "duplicate options: " + q.q;

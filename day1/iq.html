@@ -14,13 +14,13 @@
 .topbar .qno{font-weight:700}
 .topbar .spacer{flex:1}
 .qcard{margin-top:18px}
-.qtext{font-size:clamp(17px,2.6vw,21px);line-height:1.5;margin:6px 0 18px}
+.qtext{font-size:clamp(19px,2.8vw,23px);line-height:1.5;margin:6px 0 18px}
 .opts{display:grid;gap:10px}
 .opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:var(--card-2);
   color:var(--ink);border:1px solid var(--line-2);border-radius:12px;padding:13px 15px;font-weight:500;line-height:1.45}
 .opt:hover{border-color:var(--accent)}
-.opt .key{flex:none;width:26px;height:26px;border-radius:7px;background:var(--bg-2);display:grid;place-items:center;
-  font-size:13px;font-weight:800;color:var(--ink-2);border:1px solid var(--line-2)}
+.opt .key{flex:none;width:29px;height:29px;border-radius:7px;background:var(--bg-2);display:grid;place-items:center;
+  font-size:15px;font-weight:800;color:var(--ink-2);border:1px solid var(--line-2)}
 .opt.sel{border-color:var(--accent);background:rgba(126,162,98,.14)}
 .opt.sel .key{background:var(--accent);color:#0d130f;border-color:var(--accent)}
 .opt.right{border-color:var(--ok);background:rgba(111,174,114,.15)}
@@ -28,20 +28,20 @@
 .navrow{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
 .navrow .spacer{flex:1}
 .palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:7px;margin-top:16px}
-.pal{padding:8px 0;border-radius:8px;font-size:12px;font-weight:700;background:var(--card-2);color:var(--ink-2);
+.pal{padding:9px 0;border-radius:8px;font-size:14px;font-weight:700;background:var(--card-2);color:var(--ink-2);
   border:1px solid var(--line);min-width:0}
 .pal.done{background:rgba(126,162,98,.2);color:var(--accent-2);border-color:rgba(126,162,98,.45)}
 .pal.flag{background:rgba(212,165,92,.18);color:var(--warn);border-color:rgba(212,165,92,.5)}
 .pal.cur{outline:2px solid var(--accent)}
 .result .score{font-size:clamp(38px,9vw,58px);font-weight:800;text-align:center;line-height:1.1}
-.result .score small{display:block;font-size:14px;font-weight:600;color:var(--ink-2);letter-spacing:1px;margin-top:6px}
-.catrow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.result .score small{display:block;font-size:15px;font-weight:600;color:var(--ink-2);letter-spacing:1px;margin-top:6px}
+.catrow{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:16px}
 .review{display:grid;gap:14px;margin-top:16px}
 .rev{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card-2)}
 .rev .rq{font-weight:600;line-height:1.5;margin-bottom:8px}
-.rev .ra{font-size:14px;line-height:1.6}
+.rev .ra{font-size:16px;line-height:1.6}
 .rev .ok{color:var(--ok)}.rev .no{color:var(--danger)}
-.rev .why{margin-top:7px;font-size:13px;color:var(--ink-2)}
+.rev .why{margin-top:7px;font-size:15px;color:var(--ink-2)}
 .hidden{display:none}
 @media(max-width:620px){
   .topbar{gap:8px;padding:8px 0 10px}
@@ -59,7 +59,7 @@
   <!-- setup -->
   <section id="setup" class="card setup">
     <h2>Screening 1 &mdash; IQ Test</h2>
-    <p class="muted small">Each batch has exactly 100 questions. A batch number always gives the same set of questions, so you can compare your score with a friend on the same batch.</p>
+    <p class="muted small">Each batch has exactly 100 questions. Every batch carries exactly 5 questions from each of the 20 screening categories, and a batch number always gives the same set of questions — so you can compare your score with a friend on the same batch.</p>
     <div class="grid-2">
       <div class="field">
         <label for="batch">Batch</label>
@@ -68,7 +68,7 @@
       <div class="field">
         <label for="dur">Time limit</label>
         <select id="dur">
-          <option value="1800">30 minutes (board standard)</option>
+          <option value="1800">30 minutes (standard)</option>
           <option value="2400">40 minutes</option>
           <option value="3600">60 minutes</option>
           <option value="0">Untimed practice</option>
@@ -115,15 +115,20 @@
       <div id="summary" class="small muted" style="text-align:center;margin-top:8px"></div>
       <div class="row center" style="margin-top:18px">
         <button id="again">Try another batch</button>
-        <button id="showRev" class="secondary">Show answers</button>
+        <button id="print" class="secondary">Print / Save PDF</button>
         <a class="btn secondary" href="../index.html" style="text-decoration:none">Dashboard</a>
       </div>
     </div>
     <div class="card" style="margin-top:16px">
       <h3>Category breakdown</h3>
+      <p class="small muted" style="margin:0 0 10px">Five questions from each category in every batch.</p>
       <div id="cats"></div>
     </div>
-    <div id="review" class="review hidden"></div>
+    <div class="card" style="margin-top:16px">
+      <h3>Answers &amp; explanations</h3>
+      <p class="small muted" style="margin:0">Every question of this batch, with the correct answer and why it is correct.</p>
+      <div id="review" class="review"></div>
+    </div>
   </section>
 
 </div>
@@ -134,7 +139,7 @@
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store} = ISSB;
-ISSB.mountHeader("Screening 1 — IQ Test", "100 questions per batch · board-style timing", "../index.html");
+ISSB.mountHeader("Screening 1 — IQ Test", "100 questions per batch · standard timing", "../index.html");
 
 const KEYS = ["A","B","C","D"];
 let questions = [], answers = [], flags = [], cur = 0, clock = null, limit = 0;
@@ -154,7 +159,9 @@ batchSel.onchange = refreshBest;
 refreshBest();
 
 /* ---- start ---- */
-$("begin").onclick = () => {
+$("begin").onclick = () => ISSB.askCadet("Screening 1 — IQ Test", startTest);
+
+function startTest(){
   questions = IQGen.buildBatch(Number(batchSel.value));
   answers = new Array(questions.length).fill(-1);
   flags = new Array(questions.length).fill(false);
@@ -178,7 +185,7 @@ $("begin").onclick = () => {
     $("clock").textContent = "No limit";
   }
   window.scrollTo(0,0);
-};
+}
 
 /* ---- rendering ---- */
 function render(){
@@ -258,7 +265,9 @@ function submit(){
   $("result").classList.remove("hidden");
   $("score").innerHTML = score + "<small>OUT OF " + questions.length + "</small>";
   const attempted = answers.filter(a => a > -1).length;
-  $("summary").textContent = "Batch " + key + " · attempted " + attempted + " · correct " + score +
+  $("summary").innerHTML =
+    '<div class="cadet-tag">' + esc(ISSB.cadetLine()) + "</div>" +
+    "Batch " + key + " · attempted " + attempted + " · correct " + score +
     " · wrong " + (attempted - score) + " · skipped " + (questions.length - attempted);
 
   const cbox = $("cats");
@@ -284,15 +293,11 @@ function submit(){
 
 $("again").onclick = () => {
   $("result").classList.add("hidden");
-  $("review").classList.add("hidden");
   $("setup").classList.remove("hidden");
   refreshBest();
+  window.scrollTo(0,0);
 };
-$("showRev").onclick = () => {
-  const r = $("review");
-  r.classList.toggle("hidden");
-  $("showRev").textContent = r.classList.contains("hidden") ? "Show answers" : "Hide answers";
-};
+$("print").onclick = () => window.print();
 })();
 </script>
 </body>

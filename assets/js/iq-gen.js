@@ -412,68 +412,109 @@
       per + " × " + groups + " = " + ans + ".");
   }
 
-  const GENERATORS = [
-    { fn: numberSeries, weight: 9 },
-    { fn: seriesMissing, weight: 4 },
-    { fn: letterSeries, weight: 6 },
-    { fn: alphabetPosition, weight: 4 },
-    { fn: codingDecoding, weight: 7 },
-    { fn: numberAnalogy, weight: 6 },
-    { fn: oddOneOutNumber, weight: 5 },
-    { fn: bloodRelation, weight: 6 },
-    { fn: directionSense, weight: 6 },
-    { fn: ranking, weight: 5 },
-    { fn: calendar, weight: 3 },
-    { fn: clockAngle, weight: 3 },
-    { fn: ages, weight: 5 },
-    { fn: work, weight: 4 },
-    { fn: speed, weight: 5 },
-    { fn: percentage, weight: 5 },
-    { fn: ratio, weight: 4 },
-    { fn: average, weight: 4 },
-    { fn: arithmetic, weight: 4 },
-    { fn: counting, weight: 3 },
+  /* ---------------------------------------------------------------------
+     The 20 ISSB screening (OIR) categories. Every batch carries EXACTLY
+     PER_CAT questions from each, so the mix never drifts between batches.
+     `gen`     — generator functions used for this category
+     `curated` — categories in iq-curated.js that feed this category
+     Situational and General items stay in the curated file but are NOT drawn
+     here: the board's screening test is reasoning only. They are kept for the
+     SRT drill when Day-1 SRT is built.
+     --------------------------------------------------------------------- */
+  const CATEGORIES = [
+    { name: "Number Series",         gen: [numberSeries, seriesMissing] },
+    { name: "Letter Series",         gen: [letterSeries, alphabetPosition] },
+    { name: "Coding-Decoding",       gen: [codingDecoding] },
+    { name: "Number Analogy",        gen: [numberAnalogy] },
+    { name: "Blood Relations",       gen: [bloodRelation] },
+    { name: "Direction Sense",       gen: [directionSense] },
+    { name: "Ranking & Order",       gen: [ranking] },
+    { name: "Calendar & Clock",      gen: [calendar, clockAngle] },
+    { name: "Age Problems",          gen: [ages] },
+    { name: "Work & Time",           gen: [work] },
+    { name: "Speed & Distance",      gen: [speed] },
+    { name: "Percentage & Ratio",    gen: [percentage, ratio] },
+    { name: "Average & Arithmetic",  gen: [average, arithmetic, counting] },
+    { name: "Odd One Out",           gen: [oddOneOutNumber], curated: ["Odd One Out"], curatedShare: 3 },
+    { name: "Verbal Analogy",        curated: ["Verbal Analogy"] },
+    { name: "Synonyms",              curated: ["Synonyms"] },
+    { name: "Antonyms",              curated: ["Antonyms"] },
+    { name: "One Word Substitution", curated: ["One Word Substitution"] },
+    { name: "Word Building",         curated: ["Word Building"] },
+    { name: "Logical Deduction",     curated: ["Logical Deduction"] },
   ];
 
-  const POOL = [];
-  GENERATORS.forEach((g) => { for (let i = 0; i < g.weight; i++) POOL.push(g.fn); });
+  const BATCH_COUNT = 24;   // raise to add more batches — nothing else changes
+  const PER_CAT = 5;        // questions per category, per batch
+  const BATCH_SIZE = CATEGORIES.length * PER_CAT;   // 20 × 5 = 100
 
-  const BATCH_COUNT = 24;      // raise this to add more batches — nothing else changes
-  const BATCH_SIZE = 100;
-  const CURATED_PER_BATCH = 35;
+  function curatedPool(names) {
+    const all = global.IQ_CURATED || [];
+    return all.filter((c) => names.indexOf(c.c) > -1);
+  }
 
-  /* Deterministic batch: batch N is always the same 100 questions. */
+  function fromCurated(item, cat, rng) {
+    const all = seededShuffle(item.o, rng);
+    return { cat, q: item.q, options: all.map(String), answerIndex: all.indexOf(item.o[0]), explain: item.e || "" };
+  }
+
+  /* Deterministic batch: batch N is always the same 100 questions,
+     five from each of the 20 categories. */
   function buildBatch(n) {
     const rng = mulberry32(1000 + n * 7919);
     const out = [];
     const seen = new Set();
+    // Many curated items share a stem ("Choose the odd one out:") and differ only
+    // in their options, so identity is stem + options, not stem alone.
     const push = (q) => {
-      if (!q || seen.has(q.q)) return false;
-      seen.add(q.q);
+      if (!q) return false;
+      const key = q.q + " ¦ " + [...q.options].sort().join("|");
+      if (seen.has(key)) return false;
+      seen.add(key);
       out.push(q);
       return true;
     };
 
-    const curated = global.IQ_CURATED || [];
-    if (curated.length) {
-      const take = Math.min(CURATED_PER_BATCH, curated.length);
-      // rotate the curated bank by batch so consecutive batches don't overlap heavily
-      const offset = (n * take) % curated.length;
-      const rotated = curated.slice(offset).concat(curated.slice(0, offset));
-      for (const c of rotated) {
-        if (out.length >= take) break;
-        const all = seededShuffle(c.o, rng);
-        push({ cat: c.c, q: c.q, options: all.map(String), answerIndex: all.indexOf(c.o[0]), explain: c.e || "" });
-      }
-    }
+    CATEGORIES.forEach((cat) => {
+      let taken = 0;
 
-    let guard = 0;
-    while (out.length < BATCH_SIZE && guard < BATCH_SIZE * 60) {
-      guard++;
-      push(pick(rng, POOL)(rng));
-    }
-    return seededShuffle(out, rng).slice(0, BATCH_SIZE);
+      // curated share first (rotated by batch so batches don't repeat each other)
+      if (cat.curated) {
+        const pool = curatedPool(cat.curated);
+        const want = cat.gen ? Math.min(cat.curatedShare || PER_CAT, PER_CAT) : PER_CAT;
+        if (pool.length) {
+          const offset = (n * want) % pool.length;
+          const rotated = pool.slice(offset).concat(pool.slice(0, offset));
+          for (const item of rotated) {
+            if (taken >= want) break;
+            if (push(fromCurated(item, cat.name, rng))) taken++;
+          }
+        }
+      }
+
+      // generators make up the rest
+      if (cat.gen) {
+        let guard = 0;
+        while (taken < PER_CAT && guard < 400) {
+          guard++;
+          const q = pick(rng, cat.gen)(rng);
+          q.cat = cat.name;
+          if (push(q)) taken++;
+        }
+      }
+
+      // last resort: a short curated pool that could not fill its quota
+      if (taken < PER_CAT && cat.curated) {
+        const pool = curatedPool(cat.curated);
+        for (const item of pool) {
+          if (taken >= PER_CAT) break;
+          if (push(fromCurated(item, cat.name, rng))) taken++;
+        }
+      }
+    });
+
+    return seededShuffle(out, rng);
   }
 
-  global.IQGen = { buildBatch, BATCH_COUNT, BATCH_SIZE, GENERATORS };
+  global.IQGen = { buildBatch, BATCH_COUNT, BATCH_SIZE, PER_CAT, CATEGORIES };
 })(window);
