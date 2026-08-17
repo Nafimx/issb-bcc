@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPDT scene sheet | ISSB Prep</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+.sheet{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin-top:16px}
+.cell{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#8f8f8f}
+.cell svg{display:block;width:100%;height:auto}
+.cap{font-size:13px;color:var(--ink-2);padding:7px 10px;background:var(--card)}
+.blur svg{filter:grayscale(1) blur(3px) contrast(1.1)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+  <h2>PPDT scene sheet</h2>
+  <p class="small muted">Developer view of all 40 pictures. Toggle the blur to check that each one still reads as people doing something, but no more than that.</p>
+  <div class="row"><button id="t">Toggle blur</button></div>
+</div>
+<div class="sheet blur" id="sheet"></div>
+</div>
+<script src="../assets/js/core.js"></script>
+<script src="../assets/js/ppdt-scenes.js"></script>
+<script>
+const sheet = document.getElementById("sheet");
+PPDT_SCENES.forEach(s => {
+  const d = document.createElement("div");
+  d.className = "cell";
+  d.innerHTML = s.svg() + '<div class="cap">' + s.id + " · " + s.hint + "</div>";
+  sheet.appendChild(d);
+});
+document.getElementById("t").onclick = () => sheet.classList.toggle("blur");
+</script>
+</body>
+</html>

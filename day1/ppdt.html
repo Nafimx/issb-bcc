@@ -8,8 +8,8 @@
 <link rel="stylesheet" href="../assets/css/app.css">
 <style>
 .pic{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#8f8f8f;aspect-ratio:3/2}
-.pic svg{display:block;width:100%;height:100%;filter:grayscale(1) blur(6px) contrast(1.12) brightness(.98)}
-.pic.sharp svg{filter:grayscale(1) blur(1px) contrast(1.05)}
+.pic svg{display:block;width:100%;height:100%;filter:grayscale(1) blur(3px) contrast(1.1)}
+.pic.sharp svg{filter:grayscale(1) contrast(1.05)}
 .pic .veil{position:absolute;inset:0;display:grid;place-items:center;align-content:center;background:rgba(16,21,18,.92);
   text-align:center;padding:20px;gap:8px}
 .pic .veil.hidden{display:none}
@@ -23,7 +23,14 @@
 .timerbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:14px}
 .timerbox .timer{font-size:38px}
 .timerbox .what{font-size:16px;color:var(--ink-2);line-height:1.5}
-.charrow{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:14px}
+.spot{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.charcol{border:1px solid var(--line-2);border-radius:12px;padding:12px;display:grid;gap:9px;background:var(--bg-2)}
+.charcol h4{margin:0 0 2px;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3)}
+.sheet-tbl{width:100%;border-collapse:collapse;margin-top:4px}
+.sheet-tbl th,.sheet-tbl td{border:1px solid var(--line-2);padding:9px 11px;text-align:left;vertical-align:top;font-size:15px}
+.sheet-tbl th{background:var(--card-2);font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-2)}
+.sheet-tbl .story-cell{line-height:1.65;white-space:pre-wrap}
+.sheet-title{text-align:center;font-weight:700;font-style:italic;margin-bottom:6px}
 .story textarea{min-height:240px;font-size:17px}
 .rubric{display:grid;gap:9px;margin-top:12px}
 .rubric label{display:flex;gap:11px;align-items:flex-start;font-weight:500;line-height:1.5;font-size:16px;color:var(--ink-2)}
@@ -47,7 +54,7 @@
     </div>
     <div class="field">
       <label for="blur">Haziness</label>
-      <div class="slider"><input type="range" id="blur" min="2" max="12" value="6"><span id="blurVal">6 px</span></div>
+      <div class="slider"><input type="range" id="blur" min="1" max="9" value="3"><span id="blurVal">3 px</span></div>
     </div>
   </div>
   <div class="row"><button id="begin">Start PPDT</button>
@@ -78,25 +85,25 @@
   <div class="bar" style="margin-top:10px"><i id="bar"></i></div>
 
   <div class="card stage hidden" id="stage2">
-    <h3>Main character</h3>
-    <div class="charrow">
-      <div class="field"><label for="age">Age</label><input type="text" id="age" placeholder="e.g. 22"></div>
-      <div class="field"><label for="sex">Sex</label>
-        <select id="sex"><option value="">—</option><option>Male</option><option>Female</option></select></div>
-      <div class="field"><label for="mood">Mood</label><input type="text" id="mood" placeholder="e.g. determined"></div>
-      <div class="field"><label for="chars">Number of characters</label><input type="text" id="chars" placeholder="e.g. 3"></div>
-    </div>
+    <h3>Spot Box</h3>
+    <p class="small muted" style="margin:0 0 10px">One column per character you can see. Age, sex and mood only.</p>
+    <div class="spot" id="spot"></div>
+    <div class="row" style="margin-top:12px"><button id="addChar" class="ghost">+ Add character</button></div>
   </div>
 
   <div class="card stage hidden" id="stage3">
-    <h3>Action</h3>
-    <div class="field"><label for="action">What is happening in the picture?</label>
-      <textarea id="action" rows="3" placeholder="One or two lines only."></textarea></div>
+    <h3>Action Box</h3>
+    <p class="small muted" style="margin:0 0 10px">Three short lines: indoor or outdoor, who they are to each other, what is happening.</p>
+    <div class="field"><input type="text" id="act1" placeholder="1. e.g. It is an outdoor picture."></div>
+    <div class="field" style="margin-top:9px"><input type="text" id="act2" placeholder="2. e.g. They are father and son."></div>
+    <div class="field" style="margin-top:9px"><input type="text" id="act3" placeholder="3. e.g. They are discussing a matter."></div>
   </div>
 
   <div class="card stage hidden story" id="stage4">
-    <h3>Story</h3>
-    <p class="small muted">What led to this situation, what is happening now, and what is the outcome. Give your hero a positive, workable plan of action.</p>
+    <h3>Story Box</h3>
+    <p class="small muted">What led to this, what is happening now, what is the outcome. Give the hero a positive, workable plan of action.</p>
+    <div class="field" style="margin:10px 0"><label for="title">Title of the story</label>
+      <input type="text" id="title" placeholder="e.g. Humble son"></div>
     <textarea id="story" placeholder="Write your story here…"></textarea>
   </div>
 </section>
@@ -108,6 +115,13 @@
     <p class="small muted">Nothing here is auto-marked. Read your own story against the checklist below &mdash; that is how the assessor reads it.</p>
     <div class="pic sharp" id="picBox2" style="margin:14px 0"><div id="picSvg2" style="height:100%"></div></div>
     <div id="recap" class="recap"></div>
+    <h3 style="margin-top:20px">Narration &amp; group discussion</h3>
+    <p class="small muted">On the board you narrate this story to the group and then discuss it. Practise the narration aloud in one minute &mdash; hero first, then the action, then the outcome.</p>
+    <div class="row" style="margin-top:10px">
+      <button id="narrate" class="secondary">Start 1-minute narration</button>
+      <span class="timer" id="narrClock" style="font-size:26px">1:00</span>
+    </div>
+
     <h3 style="margin-top:20px">Self check</h3>
     <div class="rubric">
       <label><input type="checkbox"> The hero is clearly identified, with age, sex and mood stated.</label>
@@ -152,13 +166,34 @@ $("blur").oninput = () => {
 };
 function applyBlur(){
   const svg = $("picBox").querySelector("svg");
-  if (svg) svg.style.filter = "grayscale(1) blur(" + $("blur").value + "px) contrast(1.12) brightness(.98)";
+  if (svg) svg.style.filter = "grayscale(1) blur(" + $("blur").value + "px) contrast(1.1)";
 }
 
 const done = store.get("ppdt.count", 0);
 if (done) $("doneLine").textContent = "You have completed " + done + " PPDT story(ies) on this device.";
 
-let scene = null, phase = 0, clock = null;
+let scene = null, phase = 0, clock = null, charN = 0;
+
+/* Spot Box — one column per character, as on the board's answer sheet */
+function addChar(){
+  if (charN >= 5) return;
+  charN++;
+  const n = charN;
+  const col = el("div", "charcol");
+  col.innerHTML =
+    "<h4>Character " + n + "</h4>" +
+    '<div class="field"><label for="age' + n + '">Age</label><input type="text" id="age' + n + '" placeholder="e.g. 26"></div>' +
+    '<div class="field"><label for="sex' + n + '">Sex</label><select id="sex' + n + '">' +
+    '<option value="">—</option><option>Male</option><option>Female</option></select></div>' +
+    '<div class="field"><label for="mood' + n + '">Mood</label><input type="text" id="mood' + n + '" placeholder="e.g. serious"></div>';
+  $("spot").appendChild(col);
+}
+function resetChars(){
+  $("spot").innerHTML = "";
+  charN = 0;
+  addChar(); addChar();
+}
+$("addChar").onclick = addChar;
 
 $("begin").onclick = () => ISSB.askCadet("Screening 2 — PPDT", startPpdt);
 
@@ -168,8 +203,8 @@ function startPpdt(){
                  : PPDT_SCENES[Math.floor(Math.random() * PPDT_SCENES.length)];
   $("picSvg").innerHTML = scene.svg();
   applyBlur();
-  ["age","mood","chars","action","story"].forEach(id => $(id).value = "");
-  $("sex").value = "";
+  resetChars();
+  ["act1","act2","act3","title","story"].forEach(id => $(id).value = "");
   $("setup").classList.add("hidden");
   $("review").classList.add("hidden");
   $("test").classList.remove("hidden");
@@ -197,8 +232,8 @@ function runPhase(){
   $("stage2").classList.toggle("hidden", p.id < 2);
   $("stage3").classList.toggle("hidden", p.id < 3);
   $("stage4").classList.toggle("hidden", p.id < 4);
-  if (p.id === 2) $("age").focus();
-  if (p.id === 3) $("action").focus();
+  if (p.id === 2) $("age1").focus();
+  if (p.id === 3) $("act1").focus();
   if (p.id === 4) $("story").focus();
   clock.reset(p.secs);
   clock.start();
@@ -217,15 +252,28 @@ function finish(){
   $("review").classList.remove("hidden");
   $("picSvg2").innerHTML = scene.svg();
   const svg = $("picBox2").querySelector("svg");
-  if (svg) svg.style.filter = "grayscale(1) blur(1px) contrast(1.05)";
+  if (svg) svg.style.filter = "grayscale(1) contrast(1.05)";
   const words = ($("story").value.trim().match(/\S+/g) || []).length;
-  $("recap").textContent =
-    ISSB.cadetLine() + "\n" +
-    "Picture " + scene.id + "\n" +
-    "Age: " + ($("age").value || "—") + "    Sex: " + ($("sex").value || "—") +
-    "    Mood: " + ($("mood").value || "—") + "    Characters: " + ($("chars").value || "—") + "\n\n" +
-    "Action: " + ($("action").value.trim() || "—") + "\n\n" +
-    "Story (" + words + " words):\n" + ($("story").value.trim() || "—");
+  const spot = [];
+  for (let i = 1; i <= charN; i++) {
+    const a = $("age" + i).value.trim(), s = $("sex" + i).value, m = $("mood" + i).value.trim();
+    if (a || s || m) spot.push("Age &ndash; " + esc(a || "—") + "<br>Sex &ndash; " + esc(s || "—") + "<br>Mood &ndash; " + esc(m || "—"));
+  }
+  if (!spot.length) spot.push("—");
+  const acts = [1, 2, 3].map(i => $("act" + i).value.trim()).filter(Boolean);
+
+  $("recap").innerHTML =
+    '<div class="cadet-tag" style="margin-bottom:8px">' + esc(ISSB.cadetLine()) + " · Picture " + scene.id + "</div>" +
+    '<table class="sheet-tbl">' +
+    "<tr><th>Spot Box</th><th>Action Box</th></tr>" +
+    '<tr><td><div style="display:flex;gap:22px;flex-wrap:wrap">' +
+    spot.map(s => "<div>" + s + "</div>").join("") + "</div></td>" +
+    "<td>" + (acts.length ? acts.map((a, i) => (i + 1) + ". " + esc(a)).join("<br>") : "—") + "</td></tr>" +
+    '<tr><th colspan="2">Story Box</th></tr>' +
+    '<tr><td colspan="2" class="story-cell">' +
+    ($("title").value.trim() ? '<div class="sheet-title">' + esc($("title").value.trim()) + "</div>" : "") +
+    esc($("story").value.trim() || "—") +
+    '<div class="small muted" style="margin-top:10px">' + words + " words</div></td></tr></table>";
   store.set("ppdt.count", store.get("ppdt.count", 0) + 1);
   window.scrollTo(0,0);
 }
@@ -237,6 +285,25 @@ $("again").onclick = () => {
   $("doneLine").textContent = "You have completed " + store.get("ppdt.count",0) + " PPDT story(ies) on this device.";
 };
 $("print").onclick = () => window.print();
+
+/* narration practice — the board discusses the story after it is written */
+const narrClock = new Countdown({
+  onTick: (left) => {
+    $("narrClock").textContent = fmtClock(left);
+    $("narrClock").classList.toggle("low", left <= 10);
+  },
+  onDone: () => { $("narrate").textContent = "Start 1-minute narration"; }
+});
+$("narrate").onclick = () => {
+  if (narrClock.running){
+    narrClock.reset(60);
+    $("narrate").textContent = "Start 1-minute narration";
+    return;
+  }
+  narrClock.reset(60);
+  narrClock.start();
+  $("narrate").textContent = "Stop";
+};
 })();
 </script>
 </body>
