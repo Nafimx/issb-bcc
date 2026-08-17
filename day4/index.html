@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 4 — Conference &amp; Final Assessment | ISSB Prep</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+.lead{color:var(--ink-2);line-height:1.65;margin:0 0 4px}
+.evt{margin-top:18px}
+.evt h3{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.evt .num{width:28px;height:28px;border-radius:8px;background:var(--card-2);border:1px solid var(--line-2);
+  display:grid;place-items:center;font-size:14px;font-weight:800;color:var(--accent-2);flex:none}
+.pts{display:grid;gap:8px;margin:10px 0 0;padding-left:20px}
+.pts li{color:var(--ink-2);line-height:1.6}
+.box{margin-top:14px;padding:16px;border:1px dashed var(--line-2);border-radius:12px;background:var(--bg-2)}
+.box .t{font-size:19px;font-weight:700;margin-bottom:8px}
+.timerrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}
+.timerrow .timer{font-size:32px}
+.rate{display:grid;gap:12px;margin-top:12px}
+.rate .row-r{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+  padding:11px 0;border-bottom:1px dashed var(--line)}
+.rate .q{line-height:1.5}
+.rate select{width:auto;min-width:130px}
+.scoreline{margin-top:16px;font-size:18px;font-weight:700}
+textarea{min-height:130px;font-size:17px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="card">
+  <h2>Day 4 &mdash; Final Assessment and Feedback</h2>
+  <p class="lead">The assessors meet, some candidates are called again, results are announced and everyone gets a feedback session. Nothing you do today can undo three days of work &mdash; but the conference appearance and the way you take the feedback still matter.</p>
+</div>
+
+<div class="card evt">
+  <h3><span class="num">1</span> Conference</h3>
+  <p class="lead">All assessors convene to discuss each candidate's performance across all tests. The psychologist, the GTO and the interviewing officer put their independent assessments side by side; consistency across the three is what decides the case.</p>
+  <p class="lead" style="margin-top:10px">You are called in briefly. Walk in smartly, sit when told, answer plainly. Common questions: how you found the board, what you did well, where you fell short, and whether you would change anything.</p>
+  <div class="box">
+    <div class="t">What the conference is really asking about you</div>
+    <ul class="pts" id="confPts"></ul>
+  </div>
+  <ul class="pts">
+    <li>Do not argue your case or explain away a poor task. Own it in one sentence.</li>
+    <li>Do not run down another candidate.</li>
+    <li>Keep the same person you were on Day 1 &mdash; the file in front of them says who that was.</li>
+  </ul>
+</div>
+
+<div class="card evt">
+  <h3><span class="num">2</span> Final Interview (if required)</h3>
+  <p class="lead">Some candidates may be called for a final interview to clarify any observations &mdash; a contradiction between the tests and the interview, a gap in the PIQ, or a borderline case. Being called is not a bad sign by itself.</p>
+  <div class="box">
+    <div class="t" id="fiQ">Press for a question.</div>
+    <div class="timerrow">
+      <button id="fiNew">Next question</button>
+      <button id="fiPrep" class="secondary">Answer in 60s</button>
+      <span class="timer" id="fiClock">1:00</span>
+    </div>
+  </div>
+</div>
+
+<div class="card evt">
+  <h3><span class="num">3</span> Result Announcement</h3>
+  <p class="lead">Candidates are informed of their selection status. Recommended candidates go on to the medical board; the rest are free to appear again if they remain eligible.</p>
+  <ul class="pts">
+    <li>Take either result standing straight. The board watches this too.</li>
+    <li>If not recommended, ask for your feedback points and write them down the same day.</li>
+    <li>Eligibility for another attempt depends on the circular you applied under &mdash; check it before you plan again.</li>
+  </ul>
+</div>
+
+<div class="card evt">
+  <h3><span class="num">4</span> Feedback Session &amp; self-assessment</h3>
+  <p class="lead">Provides insights into performance and areas for improvement, regardless of the outcome. Do the same assessment on yourself first, honestly, then compare it with what you are told.</p>
+
+  <div class="rate" id="rate"></div>
+  <div class="scoreline" id="score">Score your own performance above.</div>
+
+  <div class="field" style="margin-top:16px">
+    <label for="notes">The three things I will fix before the next attempt</label>
+    <textarea id="notes" placeholder="1.&#10;2.&#10;3."></textarea>
+  </div>
+  <div class="row no-print" style="margin-top:14px">
+    <button id="save">Save on this device</button>
+    <button id="print" class="secondary">Print / Save PDF</button>
+    <a class="btn secondary" href="../index.html" style="text-decoration:none">Dashboard</a>
+  </div>
+  <p class="small muted" id="savedAt" style="margin-top:10px"></p>
+</div>
+
+<p class="small muted" style="margin-top:20px;text-align:center">
+  Day order and test names follow the official ISSB preparatory guide &mdash;
+  <a href="https://issb-bd.org/preparatory-guide" target="_blank" rel="noopener">issb-bd.org/preparatory-guide</a>.
+</p>
+
+</div>
+
+<script src="../assets/js/core.js"></script>
+<script src="../assets/js/topics.js"></script>
+<script>
+(function(){
+const {$, el, esc, Countdown, fmtClock, store, shuffle} = ISSB;
+ISSB.mountHeader("Day 4 — Conference & Final Assessment", "conference · final interview · result · feedback", "../index.html");
+
+const cp = $("confPts");
+CONFERENCE_POINTS.forEach(t => cp.appendChild(el("li", null, esc(t))));
+
+/* final interview questions */
+const FI = [
+  "How did you find these four days?",
+  "Which test did you do worst in, and why?",
+  "You said in your interview that you lead your class. Your group did not follow you on Day 2. Explain.",
+  "If we do not recommend you today, what will you do next?",
+  "Which candidate in your group impressed you most, and why?",
+  "What is the one thing about yourself you would change?",
+  "Your PIQ says you play football regularly. How did that show here?",
+  "Would you accept a commission in any service, or only your first choice?",
+  "What did you learn about yourself in the group tasks?",
+  "Is there anything you told us that you would like to correct now?"
+];
+let fiPool = shuffle(FI), fiI = 0;
+$("fiNew").onclick = () => { $("fiQ").textContent = fiPool[fiI++ % fiPool.length]; };
+$("fiNew").click();
+
+const fiClock = new Countdown({
+  onTick: (left) => { $("fiClock").textContent = fmtClock(left); $("fiClock").classList.toggle("low", left <= 10); },
+  onDone: () => { $("fiPrep").textContent = "Answer in 60s"; }
+});
+fiClock.reset(60);
+$("fiPrep").onclick = () => {
+  if (fiClock.running){ fiClock.reset(60); $("fiPrep").textContent = "Answer in 60s"; return; }
+  fiClock.reset(60); fiClock.start(); $("fiPrep").textContent = "Stop";
+};
+
+/* self assessment */
+const QS = [
+  "Screening — did my IQ and PPDT work stand up?",
+  "Psychological tests — was the same person visible in TAT, WAT, SRT and SDT?",
+  "Group Discussion — did I add points others used?",
+  "Ground tasks — did I contribute physically as well as with ideas?",
+  "Command Task — did I give clear orders and take the hardest part?",
+  "Planning Exercise — did my plan solve every problem with timings?",
+  "Interview — did I answer honestly, without bluffing?",
+  "Throughout — did I stay the same under fatigue and pressure?"
+];
+const RATE = ["—", "Poor", "Below average", "Average", "Good", "Very good"];
+const box = $("rate");
+QS.forEach((q, i) => {
+  const row = el("div", "row-r");
+  row.innerHTML = '<div class="q">' + esc(q) + "</div>" +
+    '<select id="r_' + i + '">' + RATE.map((r, k) => '<option value="' + k + '">' + r + "</option>").join("") + "</select>";
+  box.appendChild(row);
+});
+
+function recompute(){
+  let sum = 0, n = 0;
+  QS.forEach((q, i) => { const v = Number($("r_" + i).value); if (v){ sum += v; n++; } });
+  $("score").textContent = n
+    ? "Self-assessment: " + sum + " / " + (n * 5) + " over " + n + " area(s) rated."
+    : "Score your own performance above.";
+}
+QS.forEach((q, i) => $("r_" + i).onchange = recompute);
+
+/* save + restore */
+function load(){
+  const saved = store.get("day4.review", null);
+  if (!saved) return;
+  QS.forEach((q, i) => { if (saved.r && saved.r[i] != null) $("r_" + i).value = saved.r[i]; });
+  $("notes").value = saved.notes || "";
+  $("savedAt").textContent = "Last saved " + new Date(saved.at).toLocaleString() + ".";
+  recompute();
+}
+$("save").onclick = () => {
+  store.set("day4.review", {
+    r: QS.map((q, i) => $("r_" + i).value),
+    notes: $("notes").value,
+    at: Date.now()
+  });
+  $("savedAt").textContent = "Saved just now on this device.";
+};
+$("print").onclick = () => window.print();
+load();
+recompute();
+})();
+</script>
+</body>
+</html>

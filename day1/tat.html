@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAT — Thematic Apperception Test | ISSB Prep</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+.pic{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#8f8f8f;aspect-ratio:3/2}
+.pic svg{display:block;width:100%;height:100%;filter:grayscale(1) blur(3px) contrast(1.1)}
+.pic.sharp svg{filter:grayscale(1) contrast(1.05)}
+.blankslide{position:absolute;inset:0;background:#e9e6de;display:grid;place-items:center;text-align:center;padding:24px;
+  color:#5c5c5c;font-size:15px;letter-spacing:1px}
+.timerbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:14px}
+.timerbox .timer{font-size:38px}
+.timerbox .what{font-size:16px;color:var(--ink-2);line-height:1.5}
+.slidecount{font-weight:700;letter-spacing:.4px}
+.story textarea{min-height:210px;font-size:17px}
+.hidden{display:none}
+.rev{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card-2);margin-top:12px}
+.rev .rt{font-weight:700;margin-bottom:6px}
+.rev .rs{line-height:1.65;white-space:pre-wrap}
+.revpic{width:150px;flex:none;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#8f8f8f}
+.revpic svg{display:block;width:100%;height:auto;filter:grayscale(1) contrast(1.05)}
+.revrow{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.revrow .rtext{flex:1;min-width:220px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="setup" class="card">
+  <h2>Thematic Apperception Test</h2>
+  <p class="muted small">Eleven pictures and one blank slide. Each picture is shown for 30 seconds, then you have 4 minutes to write a story on it. The blank slide comes last: you imagine your own picture and write a story on it. The clock runs on its own — the whole set takes about 55 minutes, exactly like the board.</p>
+  <div class="grid-2" style="margin:16px 0">
+    <div class="field">
+      <label for="count">Slides</label>
+      <select id="count">
+        <option value="12" selected>Full set — 11 pictures + 1 blank</option>
+        <option value="6">Short set — 5 pictures + 1 blank</option>
+        <option value="3">Quick practice — 2 pictures + 1 blank</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="write">Writing time per slide</label>
+      <select id="write">
+        <option value="240" selected>4 minutes (standard)</option>
+        <option value="300">5 minutes</option>
+        <option value="180">3 minutes</option>
+      </select>
+    </div>
+  </div>
+  <div class="row"><button id="begin">Start TAT</button>
+    <a class="btn secondary" href="../index.html" style="text-decoration:none">Dashboard</a></div>
+  <p class="small muted" id="doneLine" style="margin-top:14px"></p>
+</section>
+
+<section id="test" class="hidden">
+  <div class="row" style="justify-content:space-between">
+    <span class="slidecount" id="slideNo">Slide 1 / 12</span>
+    <span class="small muted" id="phaseName">Observe</span>
+  </div>
+
+  <div class="pic" id="picBox" style="margin-top:10px">
+    <div id="picSvg" style="height:100%"></div>
+    <div class="blankslide hidden" id="blank">BLANK SLIDE<br><span class="small">Imagine a picture of your own and write a story on it.</span></div>
+  </div>
+
+  <div class="timerbox">
+    <span class="timer" id="clock">0:30</span>
+    <span class="what" id="what">Look at the picture. Do not write yet.</span>
+    <span style="flex:1"></span>
+    <button id="skip" class="ghost">Next phase</button>
+  </div>
+  <div class="bar" style="margin-top:10px"><i id="bar"></i></div>
+
+  <div class="card story hidden" id="stage" style="margin-top:16px">
+    <h3>Story</h3>
+    <p class="small muted">One hero, a clear action, a workable outcome. What led to the scene, what is happening, what follows.</p>
+    <textarea id="story" placeholder="Write your story here…"></textarea>
+  </div>
+</section>
+
+<section id="review" class="hidden">
+  <div class="card">
+    <h2>Your TAT set</h2>
+    <div id="cadetTag" class="cadet-tag" style="margin-bottom:6px"></div>
+    <p class="small muted">Nothing is auto-marked. Read your own set: the same hero should appear across the stories — resourceful, positive, acting himself.</p>
+    <div id="revList"></div>
+    <div class="row no-print" style="margin-top:18px">
+      <button id="again">Another set</button>
+      <button id="print" class="secondary">Print / Save PDF</button>
+      <a class="btn secondary" href="../index.html" style="text-decoration:none">Dashboard</a>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script src="../assets/js/core.js"></script>
+<script src="../assets/js/ppdt-scenes.js"></script>
+<script>
+(function(){
+const {$, el, esc, Countdown, fmtClock, store, shuffle} = ISSB;
+ISSB.mountHeader("TAT — Thematic Apperception Test", "11 pictures + 1 blank · 30s look, 4 min write", "../index.html");
+
+const VIEW = 30;
+let slides = [], i = 0, phase = 0, clock = null, writeSecs = 240, stories = [];
+
+$("begin").onclick = () => ISSB.askCadet("Thematic Apperception Test", start);
+
+function start(){
+  const n = Number($("count").value);
+  writeSecs = Number($("write").value);
+  slides = shuffle(PPDT_SCENES).slice(0, n - 1).concat([null]);   // null = the blank slide
+  stories = new Array(slides.length).fill("");
+  i = 0; phase = 0;
+  $("setup").classList.add("hidden");
+  $("review").classList.add("hidden");
+  $("test").classList.remove("hidden");
+  clock = new Countdown({ onTick: tick, onDone: nextPhase });
+  runSlide();
+  window.scrollTo(0,0);
+}
+
+function tick(left, total){
+  $("clock").textContent = fmtClock(left);
+  $("clock").classList.toggle("low", left <= 10);
+  $("bar").style.transform = "scaleX(" + (total ? left/total : 0) + ")";
+}
+
+function runSlide(){
+  const s = slides[i];
+  $("slideNo").textContent = "Slide " + (i+1) + " / " + slides.length;
+  if (s){
+    $("picSvg").innerHTML = s.svg();
+    $("blank").classList.add("hidden");
+  } else {
+    $("picSvg").innerHTML = "";
+    $("blank").classList.remove("hidden");
+  }
+  phase = 0;
+  $("phaseName").textContent = "Observe";
+  $("what").textContent = s ? "Look at the picture. Do not write yet."
+                            : "Blank slide — picture your own scene. Do not write yet.";
+  $("stage").classList.add("hidden");
+  $("story").value = "";
+  $("story").readOnly = false;
+  clock.reset(VIEW);
+  clock.start();
+}
+
+function startWriting(){
+  phase = 1;
+  $("phaseName").textContent = "Write";
+  $("what").textContent = "Write the story now.";
+  $("stage").classList.remove("hidden");
+  $("story").focus();
+  clock.reset(writeSecs);
+  clock.start();
+}
+
+function nextPhase(){
+  if (phase === 0){ startWriting(); return; }
+  stories[i] = $("story").value.trim();
+  if (i < slides.length - 1){ i++; runSlide(); window.scrollTo(0,0); return; }
+  finish();
+}
+$("skip").onclick = () => { clock.stop(); nextPhase(); };
+
+function finish(){
+  clock.stop();
+  $("test").classList.add("hidden");
+  $("review").classList.remove("hidden");
+  $("cadetTag").textContent = ISSB.cadetLine();
+  const box = $("revList");
+  box.innerHTML = "";
+  slides.forEach((s, k) => {
+    const words = (stories[k].match(/\S+/g) || []).length;
+    const d = el("div", "rev");
+    d.innerHTML =
+      '<div class="revrow">' +
+      '<div class="revpic">' + (s ? s.svg() : '<div style="padding:30px 10px;text-align:center;color:#555;font-size:12px">BLANK SLIDE</div>') + "</div>" +
+      '<div class="rtext"><div class="rt">Slide ' + (k+1) + " · " + words + " words</div>" +
+      '<div class="rs">' + esc(stories[k] || "— not written —") + "</div></div></div>";
+    box.appendChild(d);
+  });
+  store.set("tat.sets", store.get("tat.sets", 0) + 1);
+  window.scrollTo(0,0);
+}
+
+$("again").onclick = () => {
+  $("review").classList.add("hidden");
+  $("setup").classList.remove("hidden");
+  $("doneLine").textContent = "You have completed " + store.get("tat.sets",0) + " TAT set(s) on this device.";
+};
+$("print").onclick = () => window.print();
+
+const done = store.get("tat.sets", 0);
+if (done) $("doneLine").textContent = "You have completed " + done + " TAT set(s) on this device.";
+})();
+</script>
+</body>
+</html>

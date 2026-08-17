@@ -10,10 +10,16 @@ Live: https://issb-bcc.vercel.app
 | Drill | Page | Notes |
 |---|---|---|
 | Intelligence Test | `day1/iq.html` | 24 batches × 100 questions, 5 per category, 30-minute standard timing, per-category breakdown, full answer key with explanations |
-| PPDT | `day1/ppdt.html` | 40 hazy pictures. 30s observe → 30s Spot Box → 30s Action Box → 4 min Story Box, auto-advancing, then a 1-minute narration timer |
-| Word Association Test | `day1/wat.html` | Two sections per batch — 50 English then 50 Bangla. Focus mode shows only the clock, the word and a small Cancel. "Make sentences" reveals a short model sentence per word |
+| PPDT | `day1/ppdt.html` | 40 hazy pictures. 30s observe → 30s Spot Box → 30s Action Box → 4 min Story Box, then a 1-minute narration timer |
+| TAT | `day1/tat.html` | 11 pictures + 1 blank slide. 30s look, 4 min write, auto-advancing; the whole set replays for review |
+| WAT | `day1/wat.html` | Two sections per batch — 50 English then 50 Bangla. Focus mode shows only the clock, the word and a small Cancel. "Make sentences" reveals a short model per word |
+| SRT | `day1/srt.html` | 60 situations in 30 minutes from a 117-situation bank, each with a model response shown afterwards |
+| SDT | `day1/sdt.html` | Five views of the same person in 15 minutes, word counts, self-check list |
+| Day 2 | `day2/index.html` | GD topic generator, PGT/HGT briefs, Extempore two-topic drill, PAT circuit timer, DP interview banks (5 sets) |
+| Day 3 | `day3/index.html` | 8 Planning Exercise scenarios with a written-plan box, CAD themes, 6 Command Task briefs, Mutual Assessment sheet |
+| Day 4 | `day4/index.html` | What the conference decides, final-interview drill, and a saved self-assessment sheet |
 
-The dashboard lays out the full Day-1 sequence — Intelligence Test, PPDT, Screening Result, TAT, WAT, SRT, SDT — with TAT, SRT and SDT greyed out, plus Day 2/3/4 as Coming Soon.
+The dashboard lays out the full four-day programme. Every drill is live; only "Screening Result" stays as an information card, because it is a board event rather than something to practise.
 
 Every segment asks for name, college and cadet number before it starts; the details are kept in `localStorage` on that device and pre-filled next time.
 

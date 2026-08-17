@@ -26,6 +26,8 @@ pre{white-space:pre-wrap;font-size:12px;color:var(--ink-2)}
 <script src="../assets/js/iq-gen.js"></script>
 <script src="../assets/js/wat-words.js"></script>
 <script src="../assets/js/ppdt-scenes.js"></script>
+<script src="../assets/js/srt-bank.js"></script>
+<script src="../assets/js/topics.js"></script>
 <script>
 const out = document.getElementById("out"), detail = document.getElementById("detail");
 let failures = [];
@@ -79,6 +81,25 @@ check("Word bank: unique words, every word has a sentence", () => {
   if (new Set(WAT_EN.map(x=>x.w)).size !== WAT_EN.length) return "duplicate English word";
   if (new Set(WAT_BN.map(x=>x.w)).size !== WAT_BN.length) return "duplicate Bangla word";
   return WAT_EN.length >= 50 && WAT_BN.length >= 50 ? true : "bank too small";
+});
+
+check("SRT bank: every situation has a model response", () => {
+  if (typeof SRT_BANK === "undefined") return "bank not loaded";
+  if (SRT_BANK.length < 60) return "only " + SRT_BANK.length + " situations — a full set needs 60";
+  const bad = SRT_BANK.filter(x => !x.s || !x.m);
+  if (bad.length) return bad.length + " incomplete entries";
+  return new Set(SRT_BANK.map(x => x.s)).size === SRT_BANK.length || "duplicate situations";
+});
+
+check("Day 2/3/4 banks are populated", () => {
+  const need = { SDT_PARTS: 5, GD_TOPICS: 10, EXTEMPORE_TOPICS: 10, CAD_TOPICS: 10, PE_SCENARIOS: 4, CT_TASKS: 4, CONFERENCE_POINTS: 4 };
+  for (const k in need){
+    const v = window[k];
+    if (!Array.isArray(v)) return k + " missing";
+    if (v.length < need[k]) return k + " has only " + v.length;
+  }
+  const badPE = PE_SCENARIOS.filter(s => !s.title || !s.text || !(s.problems || []).length);
+  return badPE.length === 0 || badPE.length + " scenarios missing fields";
 });
 
 check("PPDT: 40 scenes, each renders an <svg>", () => {

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDT — Self Description Test | ISSB Prep</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+.topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .timer{font-size:26px}
+.topbar .spacer{flex:1}
+.partbox{margin-top:16px}
+.partbox textarea{min-height:150px;font-size:17px}
+.parthint{color:var(--ink-2);font-size:15px;line-height:1.55;margin:0 0 10px}
+.guide{display:grid;gap:8px;margin-top:10px}
+.guide li{color:var(--ink-2);line-height:1.55;font-size:15px}
+.wc{font-size:14px;color:var(--ink-3)}
+.hidden{display:none}
+.rev{border:1px solid var(--line);border-radius:12px;padding:15px;background:var(--card-2);margin-top:12px}
+.rev h4{margin:0 0 7px;font-size:16px}
+.rev .rs{line-height:1.7;white-space:pre-wrap}
+.rubric{display:grid;gap:9px;margin-top:12px}
+.rubric label{display:flex;gap:11px;align-items:flex-start;font-weight:500;line-height:1.5;font-size:16px;color:var(--ink-2)}
+.rubric input{width:auto;margin-top:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="setup" class="card">
+  <h2>Self Description Test</h2>
+  <p class="muted small">Five short pieces about the same person: how your parents, your teachers and your friends see you, how you see yourself, and what you are trying to become. Fifteen minutes for all five. The interviewer reads this before your interview and will question you on every line, so write only what is true.</p>
+  <ul class="guide" id="guide"></ul>
+  <div class="grid-2" style="margin:18px 0">
+    <div class="field">
+      <label for="dur">Time limit</label>
+      <select id="dur">
+        <option value="900" selected>15 minutes (standard)</option>
+        <option value="1200">20 minutes</option>
+        <option value="0">Untimed practice</option>
+      </select>
+    </div>
+  </div>
+  <div class="row"><button id="begin">Start SDT</button>
+    <a class="btn secondary" href="../index.html" style="text-decoration:none">Dashboard</a></div>
+  <p class="small muted" id="doneLine" style="margin-top:14px"></p>
+</section>
+
+<section id="test" class="hidden">
+  <div class="topbar">
+    <span class="timer" id="clock">15:00</span>
+    <span class="small muted" id="hint">Write all five parts. Move on if one is hard.</span>
+    <span class="spacer"></span>
+    <button id="finish" class="secondary">Finish</button>
+  </div>
+  <div class="bar" style="margin-top:10px"><i id="bar"></i></div>
+  <div id="parts"></div>
+</section>
+
+<section id="review" class="hidden">
+  <div class="card">
+    <h2>Your self description</h2>
+    <div id="cadetTag" class="cadet-tag"></div>
+    <div id="summary" class="small muted" style="margin-top:6px"></div>
+    <div id="revList"></div>
+    <h3 style="margin-top:22px">Self check</h3>
+    <div class="rubric">
+      <label><input type="checkbox"> All five parts describe the same person.</label>
+      <label><input type="checkbox"> I have given incidents and habits, not just adjectives.</label>
+      <label><input type="checkbox"> I named a real weakness and what I am doing about it.</label>
+      <label><input type="checkbox"> Nothing here would surprise my parents or my teachers if they read it.</label>
+      <label><input type="checkbox"> I can answer a question on every sentence I wrote.</label>
+      <label><input type="checkbox"> The last part gives concrete steps, not wishes.</label>
+    </div>
+    <div class="row no-print" style="margin-top:18px">
+      <button id="again">Write again</button>
+      <button id="print" class="secondary">Print / Save PDF</button>
+      <a class="btn secondary" href="../index.html" style="text-decoration:none">Dashboard</a>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script src="../assets/js/core.js"></script>
+<script src="../assets/js/topics.js"></script>
+<script>
+(function(){
+const {$, el, esc, Countdown, fmtClock, store} = ISSB;
+ISSB.mountHeader("SDT — Self Description Test", "five views of the same person · 15 minutes", "../index.html");
+
+const g = $("guide");
+SDT_GUIDE.forEach(t => g.appendChild(el("li", null, esc(t))));
+
+let clock = null;
+
+SDT_PARTS.forEach((p, i) => {
+  const card = el("div", "card partbox");
+  card.innerHTML =
+    "<h3>" + (i+1) + ". " + esc(p.title) + "</h3>" +
+    '<p class="parthint">' + esc(p.hint) + "</p>" +
+    '<textarea id="p_' + p.id + '" placeholder="Write here…"></textarea>' +
+    '<div class="wc" id="wc_' + p.id + '" style="margin-top:8px">0 words</div>';
+  $("parts").appendChild(card);
+});
+
+SDT_PARTS.forEach(p => {
+  const t = $("p_" + p.id);
+  t.addEventListener("input", () => {
+    $("wc_" + p.id).textContent = (t.value.match(/\S+/g) || []).length + " words";
+  });
+});
+
+$("begin").onclick = () => ISSB.askCadet("Self Description Test", start);
+
+function start(){
+  SDT_PARTS.forEach(p => { $("p_" + p.id).value = ""; $("p_" + p.id).readOnly = false; $("wc_" + p.id).textContent = "0 words"; });
+  $("setup").classList.add("hidden");
+  $("review").classList.add("hidden");
+  $("test").classList.remove("hidden");
+  const limit = Number($("dur").value);
+  if (limit > 0){
+    clock = new Countdown({
+      onTick: (left, total) => {
+        $("clock").textContent = fmtClock(left);
+        $("clock").classList.toggle("low", left <= 60);
+        $("bar").style.transform = "scaleX(" + (total ? left/total : 0) + ")";
+      },
+      onDone: submit
+    });
+    clock.start(limit);
+  } else {
+    $("clock").textContent = "No limit";
+    $("bar").style.transform = "scaleX(1)";
+  }
+  $("p_" + SDT_PARTS[0].id).focus();
+  window.scrollTo(0,0);
+}
+
+$("finish").onclick = submit;
+
+function submit(){
+  if (clock) clock.stop();
+  SDT_PARTS.forEach(p => $("p_" + p.id).readOnly = true);
+  $("test").classList.add("hidden");
+  $("review").classList.remove("hidden");
+  $("cadetTag").textContent = ISSB.cadetLine();
+  let total = 0;
+  const box = $("revList");
+  box.innerHTML = "";
+  SDT_PARTS.forEach((p, i) => {
+    const v = $("p_" + p.id).value.trim();
+    const w = (v.match(/\S+/g) || []).length;
+    total += w;
+    box.appendChild(el("div", "rev",
+      "<h4>" + (i+1) + ". " + esc(p.title) + " · " + w + " words</h4>" +
+      '<div class="rs">' + esc(v || "— not written —") + "</div>"));
+  });
+  $("summary").textContent = total + " words in all five parts.";
+  store.set("sdt.count", store.get("sdt.count", 0) + 1);
+  window.scrollTo(0,0);
+}
+
+$("again").onclick = () => {
+  $("review").classList.add("hidden");
+  $("setup").classList.remove("hidden");
+  $("doneLine").textContent = "You have written " + store.get("sdt.count",0) + " self description(s) on this device.";
+};
+$("print").onclick = () => window.print();
+
+const done = store.get("sdt.count", 0);
+if (done) $("doneLine").textContent = "You have written " + done + " self description(s) on this device.";
+})();
+</script>
+</body>
+</html>

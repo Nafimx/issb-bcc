@@ -59,52 +59,52 @@
 
   <div class="section"><h3>Day 1 &mdash; Psychological Tests</h3><div class="line"></div></div>
   <div class="cards">
-    <div class="tile locked">
+    <a class="tile" href="day1/tat.html">
       <div class="ico">🎞️</div>
       <h4>4 &middot; TAT</h4>
-      <p>Thematic Apperception Test &mdash; write stories on a series of pictures. Assesses imagination and emotional response.</p>
-      <div class="foot"><span class="pill soon">Coming Soon</span></div>
-    </div>
+      <p>Thematic Apperception Test &mdash; 11 pictures and a blank slide, 30 seconds to look and 4 minutes to write each story.</p>
+      <div class="foot"><span class="pill live">Live</span><span class="stat" id="statTat"></span></div>
+    </a>
     <a class="tile" href="day1/wat.html">
       <div class="ico">⚡</div>
       <h4>5 &middot; WAT</h4>
       <p>Word Association Test &mdash; spontaneous response to flashed words. 50 words per batch, weighted towards hard and military words.</p>
       <div class="foot"><span class="pill live">Live</span><span class="stat" id="statWat"></span></div>
     </a>
-    <div class="tile locked">
+    <a class="tile" href="day1/srt.html">
       <div class="ico">🧭</div>
       <h4>6 &middot; SRT</h4>
-      <p>Situation Reaction Test &mdash; decision-making and problem-solving through responses to hypothetical situations.</p>
-      <div class="foot"><span class="pill soon">Coming Soon</span></div>
-    </div>
-    <div class="tile locked">
+      <p>Situation Reaction Test &mdash; 60 situations in 30 minutes, each with a model response to compare against afterwards.</p>
+      <div class="foot"><span class="pill live">Live</span><span class="stat" id="statSrt"></span></div>
+    </a>
+    <a class="tile" href="day1/sdt.html">
       <div class="ico">✍️</div>
       <h4>7 &middot; SDT</h4>
-      <p>Self-Description Test &mdash; describe yourself as your parents, teachers, friends and you yourself see you.</p>
-      <div class="foot"><span class="pill soon">Coming Soon</span></div>
-    </div>
+      <p>Self-Description Test &mdash; five views of the same person: parents, teachers, friends, yourself, and who you want to become.</p>
+      <div class="foot"><span class="pill live">Live</span><span class="stat" id="statSdt"></span></div>
+    </a>
   </div>
 
   <div class="section"><h3>Day 2, 3 &amp; 4</h3><div class="line"></div></div>
   <div class="cards">
-    <div class="tile locked">
+    <a class="tile" href="day2/index.html">
       <div class="ico">🧗</div>
-      <h4>Day 2 &mdash; Group Testing</h4>
-      <p>Group Discussion, Progressive Group Task, Half Group Task, Extempore Speech and the Physical Ability Test. Half the group also attends the Deputy President's interview.</p>
-      <div class="foot"><span class="pill soon">Coming Soon</span></div>
-    </div>
-    <div class="tile locked">
+      <h4>Day 2 &mdash; Group Testing &amp; Interview</h4>
+      <p>Group Discussion, Progressive Group Task, Half Group Task, Extempore Speech and the Physical Ability Test, plus the DP's interview question banks. Topic generators and live timers.</p>
+      <div class="foot"><span class="pill live">Live</span></div>
+    </a>
+    <a class="tile" href="day3/index.html">
       <div class="ico">🗺️</div>
       <h4>Day 3 &mdash; Planning &amp; Command</h4>
-      <p>Planning Exercise, Current Affairs Discussion, Command Task and Mutual Assessment. The remaining candidates attend the DP's interview.</p>
-      <div class="foot"><span class="pill soon">Coming Soon</span></div>
-    </div>
-    <div class="tile locked">
+      <p>Planning Exercise scenarios, Current Affairs Discussion themes, Command Task briefs and a Mutual Assessment sheet. The remaining candidates attend the DP's interview.</p>
+      <div class="foot"><span class="pill live">Live</span></div>
+    </a>
+    <a class="tile" href="day4/index.html">
       <div class="ico">🏅</div>
-      <h4>Day 4 &mdash; Conference</h4>
-      <p>Conference of all assessors, a final interview if required, result announcement and the feedback session.</p>
-      <div class="foot"><span class="pill soon">Coming Soon</span></div>
-    </div>
+      <h4>Day 4 &mdash; Conference &amp; Feedback</h4>
+      <p>What the conference is really deciding, the final-interview drill, and a self-assessment sheet to fill in before the board gives you theirs.</p>
+      <div class="foot"><span class="pill live">Live</span></div>
+    </a>
   </div>
 
   <p class="note">Day order and test names follow the official ISSB preparatory guide &mdash;
@@ -132,6 +132,12 @@ const pp = ISSB.store.get("ppdt.count", 0);
 if (pp) ISSB.$("statPpdt").textContent = pp + " story(ies) written";
 const wat = ISSB.store.get("wat.batches", 0);
 if (wat) ISSB.$("statWat").textContent = wat + " batch(es) completed";
+const tat = ISSB.store.get("tat.sets", 0);
+if (tat) ISSB.$("statTat").textContent = tat + " set(s) completed";
+const srt = ISSB.store.get("srt.sets", 0);
+if (srt) ISSB.$("statSrt").textContent = srt + " set(s) completed";
+const sdt = ISSB.store.get("sdt.count", 0);
+if (sdt) ISSB.$("statSdt").textContent = sdt + " description(s) written";
 </script>
 </body>
 </html>

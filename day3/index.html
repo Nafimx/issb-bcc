@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 3 — Planning, Command &amp; DP's Interview | ISSB Prep</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+.lead{color:var(--ink-2);line-height:1.65;margin:0 0 4px}
+.evt{margin-top:18px}
+.evt h3{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.evt .num{width:28px;height:28px;border-radius:8px;background:var(--card-2);border:1px solid var(--line-2);
+  display:grid;place-items:center;font-size:14px;font-weight:800;color:var(--accent-2);flex:none}
+.box{margin-top:14px;padding:16px;border:1px dashed var(--line-2);border-radius:12px;background:var(--bg-2)}
+.box .t{font-size:19px;font-weight:700;margin-bottom:8px}
+.box .story{line-height:1.7}
+.pts{display:grid;gap:8px;margin:10px 0 0;padding-left:20px}
+.pts li{color:var(--ink-2);line-height:1.6}
+.timerrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}
+.timerrow .timer{font-size:32px}
+.probs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.prob{padding:7px 12px;border-radius:99px;border:1px solid var(--line-2);background:var(--card-2);font-size:14px;color:var(--ink-2)}
+textarea{min-height:150px;font-size:17px}
+.matrix{width:100%;border-collapse:collapse;margin-top:12px}
+.matrix th,.matrix td{border:1px solid var(--line-2);padding:9px 10px;font-size:15px;text-align:left}
+.matrix th{background:var(--card-2);font-size:13px;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-2)}
+.matrix input{padding:7px 9px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="card">
+  <h2>Day 3 &mdash; Group Testing and DP's Interview</h2>
+  <p class="lead">Planning on paper, then command on the ground, then judging the men you have worked with for two days. The remaining candidates attend the Deputy President's interview.</p>
+</div>
+
+<!-- 1. Planning Exercise -->
+<div class="card evt">
+  <h3><span class="num">1</span> Planning Exercise (PE)</h3>
+  <p class="lead">Candidates are presented with a problem scenario requiring collective planning and decision-making. The story is read out, you get a few minutes alone to write your plan, then the group produces one common plan and a nominated member explains it.</p>
+
+  <div class="box">
+    <div class="t" id="peTitle">Scenario</div>
+    <div class="story" id="peText"></div>
+    <div class="probs" id="peProbs"></div>
+    <div class="timerrow">
+      <button id="peNew">New scenario</button>
+      <button id="peSolo" class="secondary">10 min &mdash; your own plan</button>
+      <button id="peGroup" class="secondary">20 min &mdash; group plan</button>
+      <span class="timer" id="peClock">10:00</span>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label for="pePlan">Your written plan</label>
+      <textarea id="pePlan" placeholder="Priority of problems · division of the group · route and timings · resources used · what you do about each problem…"></textarea>
+    </div>
+    <div class="row" style="margin-top:12px"><button id="pePrint" class="secondary">Print / Save PDF</button></div>
+  </div>
+
+  <ul class="pts">
+    <li>List every problem first, then rank them: life, then limb, then property, then information.</li>
+    <li>Split the group by task, not by friendship. Name who does what.</li>
+    <li>Use only the resources in the story, and account for every one of them.</li>
+    <li>Give timings. A plan without a clock is a wish.</li>
+    <li>Solve <b>all</b> the problems, not the easiest two.</li>
+  </ul>
+</div>
+
+<!-- 2. CAD -->
+<div class="card evt">
+  <h3><span class="num">2</span> Current Affairs Discussion (CAD)</h3>
+  <p class="lead">An interactive platform where candidates analyse and exchange views on recent national and international events.</p>
+  <div class="box">
+    <div class="t" id="cadTopic">Press for a theme.</div>
+    <div class="timerrow">
+      <button id="cadNew">New theme</button>
+      <button id="cadStart" class="secondary">Start 15-minute discussion</button>
+      <span class="timer" id="cadClock">15:00</span>
+    </div>
+  </div>
+  <ul class="pts">
+    <li>Carry facts: dates, names, figures. One accurate figure outranks a paragraph of opinion.</li>
+    <li>Give the national angle &mdash; what it means for Bangladesh.</li>
+    <li>Read one national and one international daily every day until the board.</li>
+    <li>Disagree with the argument, never with the man.</li>
+  </ul>
+</div>
+
+<!-- 3. Command Task -->
+<div class="card evt">
+  <h3><span class="num">3</span> Command Task (CT)</h3>
+  <p class="lead">Candidates take turns leading a group through tasks to assess leadership and command abilities. You are called by name, you pick two helpers, and the obstacle is yours to solve.</p>
+  <div class="box">
+    <div class="t" id="ctTitle">Task</div>
+    <div class="story" id="ctBrief"></div>
+    <div class="timerrow">
+      <button id="ctNew">New task</button>
+      <button id="ctStart" class="secondary">Start 4-minute command</button>
+      <span class="timer" id="ctClock">4:00</span>
+    </div>
+  </div>
+  <ul class="pts">
+    <li>Repeat the brief back to the GTO in one line, then start &mdash; do not stand and think in silence.</li>
+    <li>Give orders by name: "Rafi, take the plank to the far drum."</li>
+    <li>Do the hardest part yourself; never send a helper where you would not go.</li>
+    <li>If the plan fails, say so, change it aloud and keep the task moving.</li>
+    <li>Choose helpers who work, not friends who agree.</li>
+  </ul>
+</div>
+
+<!-- 4. Mutual Assessment -->
+<div class="card evt">
+  <h3><span class="num">4</span> Mutual Assessment</h3>
+  <p class="lead">You evaluate every member of your group after the tasks &mdash; communication, teamwork, problem-solving and overall contribution. Fill your group's chest numbers below and rank them honestly; the board compares your judgement with its own.</p>
+
+  <table class="matrix" id="maTable">
+    <tr><th>Chest no.</th><th>Best quality</th><th>Weakness</th><th>Rank</th></tr>
+  </table>
+  <div class="row" style="margin-top:12px">
+    <button id="maAdd" class="ghost">+ Add member</button>
+    <button id="maPrint" class="secondary">Print / Save PDF</button>
+  </div>
+  <ul class="pts">
+    <li>Rank on what the man actually did, not on who you liked.</li>
+    <li>Be ready to justify your first and last choice in the interview.</li>
+    <li>Do not rank yourself first as a matter of course &mdash; it is noticed.</li>
+  </ul>
+</div>
+
+<!-- 5. DP interview -->
+<div class="card evt">
+  <h3><span class="num">5</span> Deputy President's Interview</h3>
+  <p class="lead">The remaining candidates attend the DP's interview today. The question banks and the 60-second answer drill are on the
+    <a href="../day2/index.html">Day 2 page</a>.</p>
+</div>
+
+<p class="small muted" style="margin-top:20px;text-align:center">
+  Day order and test names follow the official ISSB preparatory guide &mdash;
+  <a href="https://issb-bd.org/preparatory-guide" target="_blank" rel="noopener">issb-bd.org/preparatory-guide</a>.
+</p>
+
+</div>
+
+<script src="../assets/js/core.js"></script>
+<script src="../assets/js/topics.js"></script>
+<script>
+(function(){
+const {$, el, esc, Countdown, fmtClock, shuffle} = ISSB;
+ISSB.mountHeader("Day 3 — Planning, Command & DP's Interview", "PE · CAD · Command Task · Mutual Assessment", "../index.html");
+
+function timerFor(clockId, btnId, seconds, label){
+  const c = new Countdown({
+    onTick: (left) => { $(clockId).textContent = fmtClock(left); $(clockId).classList.toggle("low", left <= 15); },
+    onDone: () => { $(btnId).textContent = label; }
+  });
+  $(btnId).onclick = () => {
+    if (c.running){ c.reset(seconds); $(btnId).textContent = label; return; }
+    c.reset(seconds); c.start(); $(btnId).textContent = "Stop";
+  };
+  c.reset(seconds);
+}
+
+/* Planning exercise */
+let pePool = shuffle(PE_SCENARIOS), peI = 0;
+function peNext(){
+  const s = pePool[peI++ % pePool.length];
+  $("peTitle").textContent = s.title;
+  $("peText").textContent = s.text;
+  const p = $("peProbs");
+  p.innerHTML = "";
+  s.problems.forEach(x => p.appendChild(el("span", "prob", esc(x))));
+}
+$("peNew").onclick = peNext;
+peNext();
+timerFor("peClock", "peSolo", 600, "10 min — your own plan");
+timerFor("peClock", "peGroup", 1200, "20 min — group plan");
+$("pePrint").onclick = () => window.print();
+
+/* Current affairs */
+let cadPool = shuffle(CAD_TOPICS), cadI = 0;
+$("cadNew").onclick = () => { $("cadTopic").textContent = cadPool[cadI++ % cadPool.length]; };
+$("cadNew").click();
+timerFor("cadClock", "cadStart", 900, "Start 15-minute discussion");
+
+/* Command task */
+let ctPool = shuffle(CT_TASKS), ctI = 0;
+function ctNext(){
+  const t = ctPool[ctI++ % ctPool.length];
+  $("ctTitle").textContent = t.title;
+  $("ctBrief").textContent = t.brief;
+}
+$("ctNew").onclick = ctNext;
+ctNext();
+timerFor("ctClock", "ctStart", 240, "Start 4-minute command");
+
+/* Mutual assessment */
+let maN = 0;
+function maAdd(){
+  if (maN >= 12) return;
+  maN++;
+  const tr = document.createElement("tr");
+  tr.innerHTML =
+    '<td><input type="text" placeholder="' + maN + '"></td>' +
+    '<td><input type="text" placeholder="e.g. kept the group together"></td>' +
+    '<td><input type="text" placeholder="e.g. spoke over others"></td>' +
+    '<td><input type="text" placeholder="1"></td>';
+  $("maTable").appendChild(tr);
+}
+$("maAdd").onclick = maAdd;
+for (let k = 0; k < 6; k++) maAdd();
+$("maPrint").onclick = () => window.print();
+})();
+</script>
+</body>
+</html>
