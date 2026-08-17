@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Association Test | ISSB Prep</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+.word-card{min-height:300px;border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:28px;background:var(--card)}
+.word{font-size:clamp(40px,10vw,84px);font-weight:800;line-height:1.08;word-break:break-word;letter-spacing:-1px}
+.word.bn{letter-spacing:0}
+.wlabel{font-size:13px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px}
+.whint{margin-top:18px;color:var(--ink-2);font-size:15px;min-height:24px;line-height:1.5;max-width:52ch}
+.progress{text-align:center;font-weight:700;margin-bottom:10px;letter-spacing:.4px}
+.countdown{text-align:center;font-size:34px;margin:6px 0 14px}
+.status{text-align:center;color:var(--ink-2);font-size:13px;margin-top:12px}
+.sent{margin-top:26px}
+.slist{display:grid;gap:9px;margin-top:12px}
+.sitem{padding:12px 14px;background:var(--card-2);border:1px solid var(--line);border-radius:10px;line-height:1.55;font-size:14px}
+.sitem b{color:var(--accent-2)}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="card">
+  <div class="progress" id="progress">Word 0 / 50</div>
+  <div class="countdown timer" id="countdown">Press Start</div>
+  <div class="word-card">
+    <div class="wlabel" id="wlabel">Ready</div>
+    <div class="word" id="word">Word Association</div>
+    <div class="whint" id="whint">A batch of 50 words. Look at each word and say a positive, constructive sentence aloud before the next one appears.</div>
+  </div>
+
+  <div class="row center" style="margin-top:18px">
+    <div class="field" style="min-width:150px"><label for="interval">Interval</label>
+      <select id="interval">
+        <option value="5">5 seconds</option>
+        <option value="10" selected>10 seconds</option>
+        <option value="15">15 seconds (board standard)</option>
+        <option value="20">20 seconds</option>
+        <option value="30">30 seconds</option>
+      </select></div>
+    <div class="field" style="min-width:150px"><label for="mode">Language</label>
+      <select id="mode"><option value="en" selected>English</option><option value="bn">বাংলা</option></select></div>
+    <div class="field" style="min-width:150px"><label for="mix">Word mix</label>
+      <select id="mix">
+        <option value="all" selected>Mixed (board style)</option>
+        <option value="hard">Hard / negative words only</option>
+      </select></div>
+  </div>
+
+  <div class="row center" style="margin-top:16px">
+    <button id="start">Start</button>
+    <button id="pause" class="secondary">Pause</button>
+    <button id="next" class="secondary">Next word</button>
+    <button id="newBatch" class="secondary">New batch</button>
+    <a class="btn ghost" href="../index.html" style="text-decoration:none">Dashboard</a>
+  </div>
+  <div class="status" id="status">Paused · batch ready</div>
+</div>
+
+<div class="card sent">
+  <h2>Model sentences</h2>
+  <p class="small muted" id="sentNote">Hidden until the batch is finished &mdash; do the drill first, then compare. Each word below has one model positive sentence; yours does not have to match, it only has to be positive, personal and practical.</p>
+  <div class="row" style="margin:12px 0"><button id="toggleSent" class="secondary">Show model sentences</button></div>
+  <div class="slist hidden" id="slist"></div>
+</div>
+
+<p class="small muted" style="margin-top:18px;line-height:1.6;text-align:center">
+At ISSB you get about 15 seconds per word and 60 words. Many words are negative on purpose &mdash; blood, fear, defeat, enemy, war. The board is watching whether your first instinct turns them into something constructive.</p>
+
+</div>
+
+<script src="../assets/js/core.js"></script>
+<script src="../assets/js/wat-words.js"></script>
+<script>
+(function(){
+const {$, el, esc, shuffle, Countdown, store} = ISSB;
+ISSB.mountHeader("Word Association Test", "50 words per batch · positive response drill", "../index.html");
+
+/* the first ~95 English entries and ~47 Bangla entries are the hard/negative block */
+const HARD_EN = 95, HARD_BN = 47;
+const BATCH = 50;
+
+let batch = [], index = -1, clock = null, finished = false;
+
+function pool(){
+  const bn = $("mode").value === "bn";
+  const src = bn ? WAT_BN : WAT_EN;
+  const list = $("mix").value === "hard" ? src.slice(0, bn ? HARD_BN : HARD_EN) : src;
+  return list.map(x => ({...x, bn}));
+}
+
+function makeBatch(){
+  batch = shuffle(pool()).slice(0, BATCH);
+  index = -1;
+  finished = false;
+  renderSentences();
+  $("progress").textContent = "Word 0 / " + batch.length;
+  $("countdown").textContent = "Press Start";
+  $("wlabel").textContent = "New batch";
+  $("word").textContent = "Ready";
+  $("word").className = "word" + ($("mode").value === "bn" ? " bn" : "");
+  $("whint").textContent = batch.length + " words loaded. Respond aloud with one positive sentence per word.";
+  $("status").textContent = "Paused · batch ready";
+}
+
+function renderSentences(){
+  const box = $("slist");
+  box.innerHTML = "";
+  batch.forEach((item, i) => {
+    box.appendChild(el("div", "sitem" + (item.bn ? " bn" : ""),
+      "<b>" + (i+1) + ". " + esc(item.w) + "</b> &mdash; " + esc(item.s)));
+  });
+}
+
+function showNext(){
+  if (!batch.length) makeBatch();
+  if (index >= batch.length - 1){ complete(); return; }
+  index++;
+  const item = batch[index];
+  $("wlabel").textContent = item.bn ? "বাংলা" : "English";
+  $("word").textContent = item.w;
+  $("word").className = "word" + (item.bn ? " bn" : "");
+  $("whint").textContent = "Say a positive sentence — then let it go and wait for the next word.";
+  $("progress").textContent = "Word " + (index+1) + " / " + batch.length;
+  clock.reset(Number($("interval").value));
+  clock.start();
+}
+
+function complete(){
+  clock.stop();
+  if (finished) return;          // completing twice must not double-count the batch
+  finished = true;
+  $("progress").textContent = "Batch complete — " + batch.length + " / " + batch.length;
+  $("word").textContent = "Batch complete";
+  $("word").className = "word";
+  $("wlabel").textContent = "Finished";
+  $("whint").textContent = "Now open the model sentences below and compare them with what you said.";
+  $("countdown").textContent = "Done";
+  $("status").textContent = "Finished · press New batch for another 50 words";
+  store.set("wat.batches", store.get("wat.batches", 0) + 1);
+}
+
+clock = new Countdown({
+  onTick: (left) => { $("countdown").textContent = left + "s"; $("countdown").classList.toggle("low", left <= 3); },
+  onDone: showNext
+});
+
+$("start").onclick = () => {
+  if (finished || !batch.length) makeBatch();
+  $("status").textContent = "Running";
+  if (index === -1) showNext();
+  else clock.start();
+};
+$("pause").onclick = () => { clock.pause(); $("status").textContent = "Paused"; $("countdown").textContent = "Paused"; };
+$("next").onclick = () => { clock.stop(); showNext(); };
+$("newBatch").onclick = () => { clock.stop(); makeBatch(); };
+$("interval").onchange = () => { if (index > -1 && !finished){ clock.reset(Number($("interval").value)); if (clock.running) clock.start(); } };
+$("mode").onchange = makeBatch;
+$("mix").onchange = makeBatch;
+$("toggleSent").onclick = () => {
+  const l = $("slist");
+  l.classList.toggle("hidden");
+  $("toggleSent").textContent = l.classList.contains("hidden") ? "Show model sentences" : "Hide model sentences";
+};
+
+makeBatch();
+})();
+</script>
+</body>
+</html>

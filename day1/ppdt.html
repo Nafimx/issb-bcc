@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screening 2 — PPDT | ISSB Prep</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+.pic{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#8f8f8f;aspect-ratio:3/2}
+.pic svg{display:block;width:100%;height:100%;filter:grayscale(1) blur(6px) contrast(1.12) brightness(.98)}
+.pic.sharp svg{filter:grayscale(1) blur(1px) contrast(1.05)}
+.pic .veil{position:absolute;inset:0;display:grid;place-items:center;align-content:center;background:rgba(16,21,18,.92);
+  text-align:center;padding:20px;gap:8px}
+.pic .veil.hidden{display:none}
+.phaseline{display:flex;gap:8px;margin:14px 0 6px;flex-wrap:wrap}
+.ph{flex:1;min-width:110px;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);
+  font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--ink-3);text-align:center}
+.ph.on{border-color:var(--accent);color:var(--accent-2);background:rgba(126,162,98,.13)}
+.ph.done{color:var(--ink-2)}
+.stage{margin-top:16px}
+.hidden{display:none}
+.timerbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:14px}
+.timerbox .timer{font-size:38px}
+.timerbox .what{font-size:14px;color:var(--ink-2);line-height:1.5}
+.charrow{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:14px}
+.story textarea{min-height:230px;font-size:16px}
+.rubric{display:grid;gap:9px;margin-top:12px}
+.rubric label{display:flex;gap:11px;align-items:flex-start;font-weight:500;line-height:1.5;font-size:14px;color:var(--ink-2)}
+.rubric input{width:auto;margin-top:3px}
+.recap{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.65;white-space:pre-wrap}
+.slider{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-2)}
+.slider input[type=range]{width:150px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- setup -->
+<section id="setup" class="card">
+  <h2>Screening 2 &mdash; PPDT</h2>
+  <p class="muted small">Picture Perception &amp; Description Test. A hazy picture is shown for 30 seconds. Then you note the character's age, sex and mood in 30 seconds, the action in another 30 seconds, and finally write a complete story in 4 minutes. The clock moves on its own &mdash; exactly like the board.</p>
+  <div class="grid-2" style="margin:16px 0">
+    <div class="field">
+      <label for="pic">Picture</label>
+      <select id="pic"><option value="0">Random picture</option></select>
+    </div>
+    <div class="field">
+      <label for="blur">Haziness</label>
+      <div class="slider"><input type="range" id="blur" min="2" max="12" value="6"><span id="blurVal">6 px</span></div>
+    </div>
+  </div>
+  <div class="row"><button id="begin">Start PPDT</button>
+    <a class="btn secondary" href="../index.html" style="text-decoration:none">Dashboard</a></div>
+  <p class="small muted" id="doneLine" style="margin-top:14px"></p>
+</section>
+
+<!-- test -->
+<section id="test" class="hidden">
+  <div class="phaseline">
+    <div class="ph" id="ph1">1 · Observe (30s)</div>
+    <div class="ph" id="ph2">2 · Age / Sex / Mood (30s)</div>
+    <div class="ph" id="ph3">3 · Action (30s)</div>
+    <div class="ph" id="ph4">4 · Story (4 min)</div>
+  </div>
+
+  <div class="pic" id="picBox"><div id="picSvg" style="height:100%"></div>
+    <div class="veil" id="veil"><b style="font-size:18px">Get ready</b>
+      <span class="small muted">The picture appears when you press Start.</span></div>
+  </div>
+
+  <div class="timerbox">
+    <span class="timer" id="clock">0:30</span>
+    <span class="what" id="what">Look at the picture. Do not write anything yet.</span>
+    <span style="flex:1"></span>
+    <button id="skip" class="ghost">Next phase</button>
+  </div>
+  <div class="bar" style="margin-top:10px"><i id="bar" style="width:100%"></i></div>
+
+  <div class="card stage hidden" id="stage2">
+    <h3>Main character</h3>
+    <div class="charrow">
+      <div class="field"><label for="age">Age</label><input type="text" id="age" placeholder="e.g. 22"></div>
+      <div class="field"><label for="sex">Sex</label>
+        <select id="sex"><option value="">—</option><option>Male</option><option>Female</option></select></div>
+      <div class="field"><label for="mood">Mood</label><input type="text" id="mood" placeholder="e.g. determined"></div>
+      <div class="field"><label for="chars">Number of characters</label><input type="text" id="chars" placeholder="e.g. 3"></div>
+    </div>
+  </div>
+
+  <div class="card stage hidden" id="stage3">
+    <h3>Action</h3>
+    <div class="field"><label for="action">What is happening in the picture?</label>
+      <textarea id="action" rows="3" placeholder="One or two lines only."></textarea></div>
+  </div>
+
+  <div class="card stage hidden story" id="stage4">
+    <h3>Story</h3>
+    <p class="small muted">What led to this situation, what is happening now, and what is the outcome. Give your hero a positive, workable plan of action.</p>
+    <textarea id="story" placeholder="Write your story here…"></textarea>
+  </div>
+</section>
+
+<!-- review -->
+<section id="review" class="hidden">
+  <div class="card">
+    <h2>Your PPDT response</h2>
+    <p class="small muted">Nothing here is auto-marked. Read your own story against the checklist below &mdash; that is how the assessor reads it.</p>
+    <div class="pic sharp" id="picBox2" style="margin:14px 0"><div id="picSvg2" style="height:100%"></div></div>
+    <div id="recap" class="recap"></div>
+    <h3 style="margin-top:20px">Self check</h3>
+    <div class="rubric">
+      <label><input type="checkbox"> The hero is clearly identified, with age, sex and mood stated.</label>
+      <label><input type="checkbox"> The story has a past, a present and a future &mdash; not just a description.</label>
+      <label><input type="checkbox"> The hero acts himself instead of waiting for help.</label>
+      <label><input type="checkbox"> The action is positive, practical and completed within the story.</label>
+      <label><input type="checkbox"> The mood matches what the picture actually shows.</label>
+      <label><input type="checkbox"> No violence, crime or hopeless ending.</label>
+      <label><input type="checkbox"> Written in about 4 minutes, roughly 60&ndash;100 words, in one paragraph.</label>
+    </div>
+    <div class="row no-print" style="margin-top:18px">
+      <button id="again">Another picture</button>
+      <button id="print" class="secondary">Print / Save PDF</button>
+      <a class="btn secondary" href="../index.html" style="text-decoration:none">Dashboard</a>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script src="../assets/js/core.js"></script>
+<script src="../assets/js/ppdt-scenes.js"></script>
+<script>
+(function(){
+const {$, el, esc, Countdown, fmtClock, store} = ISSB;
+ISSB.mountHeader("Screening 2 — PPDT", "30s observe · 30s character · 30s action · 4 min story", "../index.html");
+
+const PHASES = [
+  {id:1, secs:30, what:"Look at the picture carefully. Do not write anything yet."},
+  {id:2, secs:30, what:"Note the age, sex and mood of the main character."},
+  {id:3, secs:30, what:"Write in one line what is happening."},
+  {id:4, secs:240, what:"Write the full story: what led to this, what is happening, what is the outcome."}
+];
+
+const sel = $("pic");
+PPDT_SCENES.forEach(s => { const o = el("option", null, "Picture " + s.id); o.value = s.id; sel.appendChild(o); });
+
+$("blur").oninput = () => {
+  $("blurVal").textContent = $("blur").value + " px";
+  $("picSvg").style.setProperty("--b", $("blur").value + "px");
+  applyBlur();
+};
+function applyBlur(){
+  const svg = $("picBox").querySelector("svg");
+  if (svg) svg.style.filter = "grayscale(1) blur(" + $("blur").value + "px) contrast(1.12) brightness(.98)";
+}
+
+const done = store.get("ppdt.count", 0);
+if (done) $("doneLine").textContent = "You have completed " + done + " PPDT story(ies) on this device.";
+
+let scene = null, phase = 0, clock = null;
+
+$("begin").onclick = () => {
+  const chosen = Number(sel.value);
+  scene = chosen ? PPDT_SCENES.find(s => s.id === chosen)
+                 : PPDT_SCENES[Math.floor(Math.random() * PPDT_SCENES.length)];
+  $("picSvg").innerHTML = scene.svg();
+  applyBlur();
+  ["age","mood","chars","action","story"].forEach(id => $(id).value = "");
+  $("sex").value = "";
+  $("setup").classList.add("hidden");
+  $("review").classList.add("hidden");
+  $("test").classList.remove("hidden");
+  $("veil").classList.add("hidden");
+  phase = 0;
+  clock = new Countdown({ onTick: tick, onDone: nextPhase });
+  runPhase();
+  window.scrollTo(0,0);
+};
+
+function tick(left, total){
+  $("clock").textContent = fmtClock(left);
+  $("clock").classList.toggle("low", left <= 5 || (total > 60 && left <= 30));
+  $("bar").style.width = (total ? (left/total*100) : 0) + "%";
+}
+
+function runPhase(){
+  const p = PHASES[phase];
+  $("what").textContent = p.what;
+  for (let i = 1; i <= 4; i++){
+    const n = $("ph" + i);
+    n.classList.toggle("on", i === p.id);
+    n.classList.toggle("done", i < p.id);
+  }
+  $("stage2").classList.toggle("hidden", p.id < 2);
+  $("stage3").classList.toggle("hidden", p.id < 3);
+  $("stage4").classList.toggle("hidden", p.id < 4);
+  if (p.id === 2) $("age").focus();
+  if (p.id === 3) $("action").focus();
+  if (p.id === 4) $("story").focus();
+  clock.reset(p.secs);
+  clock.start();
+}
+
+function nextPhase(){
+  if (phase < PHASES.length - 1){ phase++; runPhase(); return; }
+  finish();
+}
+$("skip").onclick = () => { clock.stop(); nextPhase(); };
+
+function finish(){
+  clock.stop();
+  $("story").readOnly = true;
+  $("test").classList.add("hidden");
+  $("review").classList.remove("hidden");
+  $("picSvg2").innerHTML = scene.svg();
+  const svg = $("picBox2").querySelector("svg");
+  if (svg) svg.style.filter = "grayscale(1) blur(1px) contrast(1.05)";
+  const words = ($("story").value.trim().match(/\S+/g) || []).length;
+  $("recap").textContent =
+    "Picture " + scene.id + "\n" +
+    "Age: " + ($("age").value || "—") + "    Sex: " + ($("sex").value || "—") +
+    "    Mood: " + ($("mood").value || "—") + "    Characters: " + ($("chars").value || "—") + "\n\n" +
+    "Action: " + ($("action").value.trim() || "—") + "\n\n" +
+    "Story (" + words + " words):\n" + ($("story").value.trim() || "—");
+  store.set("ppdt.count", store.get("ppdt.count", 0) + 1);
+  window.scrollTo(0,0);
+}
+
+$("again").onclick = () => {
+  $("story").readOnly = false;
+  $("review").classList.add("hidden");
+  $("setup").classList.remove("hidden");
+  $("doneLine").textContent = "You have completed " + store.get("ppdt.count",0) + " PPDT story(ies) on this device.";
+};
+$("print").onclick = () => window.print();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Flash Timer — 50 Word Batches</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;background:#f4f6f8;display:flex;align-items:center;justify-content:center;color:#17202a}
+.app{width:min(780px,92vw);background:#fff;border-radius:22px;padding:30px;box-shadow:0 12px 40px rgba(0,0,0,.1)}
+h1{margin:0 0 8px;text-align:center}.subtitle{text-align:center;color:#667085;margin-bottom:22px}
+.word-card{min-height:310px;border:2px solid #e5e7eb;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;margin-bottom:20px}
+.language{font-size:15px;color:#667085;margin-bottom:12px}.word{font-size:clamp(42px,9vw,82px);font-weight:700;line-height:1.1;word-break:break-word}.meaning{margin-top:20px;font-size:22px;color:#475467;min-height:28px}
+.progress{font-size:16px;font-weight:600;margin-bottom:14px;text-align:center}.controls{display:grid;gap:15px}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:center}
+label{font-weight:600}select,button{font:inherit;border-radius:10px;border:1px solid #d0d5dd;padding:11px 14px}
+button{cursor:pointer;border:none;background:#17202a;color:white;min-width:120px}button.secondary{background:#e9edf2;color:#17202a}
+.timer{margin:10px auto 4px;text-align:center;font-size:42px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;padding:18px 24px;border:2px solid #e5e7eb;border-radius:16px;min-height:88px;display:flex;align-items:center;justify-content:center}.status{text-align:center;color:#667085;font-size:14px}
+.batch-info{text-align:center;color:#667085;font-size:13px}.tip{margin-top:20px;padding:12px 14px;border-radius:10px;background:#f8fafc;color:#667085;font-size:13px;line-height:1.5}
+
+.sentence-section{margin-top:28px;border-top:2px solid #e5e7eb;padding-top:24px}
+.sentence-section h2{margin:0 0 8px;text-align:center;font-size:24px}
+.sentence-note{text-align:center;color:#667085;font-size:14px;margin-bottom:18px}
+.sentence-list{display:grid;gap:10px}
+.sentence-item{padding:13px 15px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;line-height:1.5}
+.sentence-word{font-weight:700}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>Word Flash Timer</h1>
+<div class="subtitle">50 random words per batch</div>
+
+<div class="progress" id="progress">Word 0 / 50</div>
+
+<div class="timer" id="countdown">Next word in —</div>
+
+<div class="word-card">
+<div class="language" id="language">Ready</div>
+<div class="word" id="word">Press Start</div>
+<div class="meaning" id="meaning">A new 50-word batch will be created automatically.</div>
+</div>
+
+<div class="controls">
+<div class="row">
+<label for="interval">Interval:</label>
+<select id="interval">
+<option value="5">5 seconds</option>
+<option value="10" selected>10 seconds</option>
+<option value="15">15 seconds</option>
+<option value="20">20 seconds</option>
+<option value="30">30 seconds</option>
+<option value="60">1 minute</option>
+</select>
+
+<label for="mode">Language:</label>
+<select id="mode">
+<option value="english" selected>English</option>
+<option value="bangla">Bangla</option>
+</select>
+</div>
+
+<div class="row">
+<button id="start">Start</button>
+<button id="pause" class="secondary">Pause</button>
+<button id="next" class="secondary">Next Word</button>
+<button id="newBatch" class="secondary">New Batch</button>
+</div>
+
+<div class="status" id="status">Paused</div>
+<div class="batch-info" id="batchInfo">Batch not started</div>
+</div>
+
+<div class="tip">
+Each batch contains exactly 50 unique words. Words are shuffled so the same word will not repeat within a batch.
+</div>
+
+<div class="sentence-section">
+<h2>Make Sentences</h2>
+<div class="sentence-note">Positive and constructive sentences for all 50 words in the current batch.</div>
+<div class="sentence-list" id="sentenceList"></div>
+</div>
+</div>
+
+<script>
+const english=[
+["abundant","plentiful; more than enough"],["adapt","to adjust to a new situation"],["brilliant","very clever or impressive"],["cautious","careful to avoid danger or mistakes"],["curious","wanting to know or learn something"],["diligent","hard-working and careful"],["eager","very interested and excited"],["fragile","easily broken or damaged"],["genuine","real; authentic"],["humble","not thinking you are better than others"],["inevitable","certain to happen"],["keen","very interested or enthusiastic"],["modest","not excessively proud"],["obvious","easy to see or understand"],["precise","exact and accurate"],["reliable","able to be trusted"],["scarce","rare or difficult to find"],["vivid","very clear, bright, or detailed"],["wisdom","good judgment gained through experience"],["versatile","able to be used or adapted in many ways"],
+["accurate","correct and free from errors"],["ancient","very old"],["benefit","an advantage or helpful result"],["complex","complicated; not simple"],["confident","sure of yourself or your abilities"],["contribute","to give or add something"],["efficient","working well without wasting time or resources"],["essential","absolutely necessary"],["flexible","able to change or adapt easily"],["frequent","happening often"],["generous","willing to give or share"],["gradual","happening slowly over time"],["independent","able to act without depending on others"],["logical","based on clear reasoning"],["maintain","to keep something in good condition"],["notice","to become aware of something"],["obtain","to get or acquire"],["ordinary","normal; not special"],["significant","important or meaningful"],["unique","one of a kind"]];
+
+const bangla=[
+["অভ্যাস","habit"],["অবাক","surprised / astonished"],["অর্জন","achievement"],["আনন্দ","joy / happiness"],["ইচ্ছা","desire / wish"],["উদ্যোগ","initiative"],["কৌতূহল","curiosity"],["দক্ষতা","skill"],["দায়িত্ব","responsibility"],["নির্ভরযোগ্য","reliable / trustworthy"],["পরিশ্রম","hard work"],["প্রয়োজনীয়","necessary / essential"],["বুদ্ধিমত্তা","intelligence"],["সাহস","courage"],["সাফল্য","success"],["স্বাধীনতা","freedom"],["সম্ভাবনা","possibility / potential"],["স্মৃতি","memory"],["সহযোগিতা","cooperation"],["উন্নতি","improvement / progress"],
+["আশা","hope"],["আচরণ","behavior"],["আবিষ্কার","discovery / invention"],["ইতিহাস","history"],["উপকার","benefit"],["উদাহরণ","example"],["ঐক্য","unity"],["কর্ম","work / action"],["ক্ষমতা","ability / capacity"],["গুরুত্বপূর্ণ","important"],["চেষ্টা","attempt / effort"],["জ্ঞান","knowledge"],["তথ্য","information"],["নিয়ম","rule"],["পরিকল্পনা","plan"],["প্রশ্ন","question"],["বিশ্বাস","belief / trust"],["বিচার","judgment / justice"],["সময়","time"],["সমাধান","solution"]];
+
+let batch=[], index=-1, timer=null, running=false, remaining=10;
+
+const $=id=>document.getElementById(id);
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+  return a;
+}
+
+function makeSentence(item){
+  const w=item.word;
+  if(item.lang==="English"){
+    const templates=[
+      `Learning about ${w} can help us grow and make better decisions.`,
+      `A ${w} approach can lead to positive and lasting results.`,
+      `We can use ${w} thinking to solve problems constructively.`,
+      `Being ${w} helps us learn from experience and improve.`,
+      `A ${w} attitude can make everyday challenges easier to handle.`
+    ];
+    return templates[Math.floor(Math.random()*templates.length)];
+  }
+  const templates=[
+    `${w} আমাদের শেখায় কীভাবে আরও ভালোভাবে এগিয়ে যেতে হয়।`,
+    `${w} চর্চা করলে আমরা ইতিবাচকভাবে উন্নতি করতে পারি।`,
+    `${w} আমাদের জীবনে ভালো পরিবর্তন আনতে সাহায্য করে।`,
+    `${w} সম্পর্কে জানা আমাদের জ্ঞান ও দক্ষতা বাড়ায়।`,
+    `${w} আমাদের গঠনমূলকভাবে সমস্যা সমাধান করতে সাহায্য করে।`
+  ];
+  return templates[Math.floor(Math.random()*templates.length)];
+}
+
+function renderSentences(){
+  const list=$("sentenceList");
+  list.innerHTML="";
+  batch.forEach((item,i)=>{
+    const div=document.createElement("div");
+    div.className="sentence-item";
+    div.innerHTML=`<span class="sentence-word">${i+1}. ${item.word}</span> — ${makeSentence(item)}`;
+    list.appendChild(div);
+  });
+}
+
+function makeBatch(){
+  const mode=$("mode").value;
+  let pool=[];
+  if(mode==="english") pool=english.map(x=>({lang:"English",word:x[0],meaning:x[1]}));
+  else pool=bangla.map(x=>({lang:"বাংলা",word:x[0],meaning:x[1]}));
+  batch=shuffle(pool).slice(0,50);
+  index=-1;
+  renderSentences();
+  $("progress").textContent="Word 0 / 50";
+  $("batchInfo").textContent="New batch ready — 50 words";
+  resetCountdown();
+}
+
+function showNext(){
+  if(batch.length!==50) makeBatch();
+  if(index>=49){
+    pause();
+    $("progress").textContent="Batch complete — 50 / 50";
+    $("word").textContent="Batch Complete!";
+    $("language").textContent="✓ 50 words finished";
+    $("meaning").textContent="Press “New Batch” to generate another 50 words.";
+    $("countdown").textContent="Next batch not started";
+    return;
+  }
+  index++;
+  const item=batch[index];
+  $("language").textContent=item.lang;
+  $("word").textContent=item.word;
+  $("meaning").textContent=item.meaning;
+  $("progress").textContent=`Word ${index+1} / 50`;
+  resetCountdown();
+}
+
+function resetCountdown(){
+  remaining=Number($("interval").value);
+  $("countdown").textContent=`Next word in ${remaining}s`;
+}
+
+function tick(){
+  if(!running)return;
+  remaining--;
+  if(remaining<=0) showNext();
+  else $("countdown").textContent=`Next word in ${remaining}s`;
+}
+
+function start(){
+  if(running)return;
+  if(batch.length!==50 || index>=49) makeBatch();
+  running=true;
+  $("status").textContent="Running";
+  if(index===-1) showNext();
+  timer=setInterval(tick,1000);
+}
+
+function pause(){
+  running=false;
+  clearInterval(timer);
+  timer=null;
+  $("status").textContent="Paused";
+  $("countdown").textContent="Paused";
+}
+
+$("start").onclick=start;
+$("pause").onclick=pause;
+$("next").onclick=()=>{
+  if(!batch.length) makeBatch();
+  showNext();
+};
+$("newBatch").onclick=()=>{
+  pause();
+  makeBatch();
+  $("word").textContent="Press Start";
+  $("language").textContent="New Batch";
+  $("meaning").textContent="Your new 50-word batch is ready.";
+};
+$("interval").onchange=resetCountdown;
+$("mode").onchange=()=>{
+  pause();
+  makeBatch();
+  $("word").textContent="Press Start";
+  $("language").textContent="New Batch";
+  $("meaning").textContent="The 50-word batch has been regenerated for the selected mode.";
+};
+
+makeBatch();
+$("word").textContent="Press Start";
+$("language").textContent="Ready";
+$("meaning").textContent="Press Start to begin your 50-word batch.";
+</script>
+</body>
+</html>

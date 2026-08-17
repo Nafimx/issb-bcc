@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screening 1 — IQ Test | ISSB Prep</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+.setup .grid-2{margin:14px 0 18px}
+.topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar .timer{font-size:24px}
+.topbar .qno{font-weight:700}
+.topbar .spacer{flex:1}
+.qcard{margin-top:18px}
+.qtext{font-size:clamp(17px,2.6vw,21px);line-height:1.5;margin:6px 0 18px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:var(--card-2);
+  color:var(--ink);border:1px solid var(--line-2);border-radius:12px;padding:13px 15px;font-weight:500;line-height:1.45}
+.opt:hover{border-color:var(--accent)}
+.opt .key{flex:none;width:26px;height:26px;border-radius:7px;background:var(--bg-2);display:grid;place-items:center;
+  font-size:13px;font-weight:800;color:var(--ink-2);border:1px solid var(--line-2)}
+.opt.sel{border-color:var(--accent);background:rgba(126,162,98,.14)}
+.opt.sel .key{background:var(--accent);color:#0d130f;border-color:var(--accent)}
+.opt.right{border-color:var(--ok);background:rgba(111,174,114,.15)}
+.opt.wrong{border-color:var(--danger);background:rgba(201,106,90,.15)}
+.navrow{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.navrow .spacer{flex:1}
+.palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:7px;margin-top:16px}
+.pal{padding:8px 0;border-radius:8px;font-size:12px;font-weight:700;background:var(--card-2);color:var(--ink-2);
+  border:1px solid var(--line);min-width:0}
+.pal.done{background:rgba(126,162,98,.2);color:var(--accent-2);border-color:rgba(126,162,98,.45)}
+.pal.flag{background:rgba(212,165,92,.18);color:var(--warn);border-color:rgba(212,165,92,.5)}
+.pal.cur{outline:2px solid var(--accent)}
+.result .score{font-size:clamp(38px,9vw,58px);font-weight:800;text-align:center;line-height:1.1}
+.result .score small{display:block;font-size:14px;font-weight:600;color:var(--ink-2);letter-spacing:1px;margin-top:6px}
+.catrow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.review{display:grid;gap:14px;margin-top:16px}
+.rev{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card-2)}
+.rev .rq{font-weight:600;line-height:1.5;margin-bottom:8px}
+.rev .ra{font-size:14px;line-height:1.6}
+.rev .ok{color:var(--ok)}.rev .no{color:var(--danger)}
+.rev .why{margin-top:7px;font-size:13px;color:var(--ink-2)}
+.hidden{display:none}
+@media(max-width:620px){
+  .topbar{gap:8px;padding:8px 0 10px}
+  .topbar button{padding:8px 11px;font-size:13px;min-width:0}
+  .topbar .timer{font-size:21px}
+  .topbar .qno{font-size:13px}
+  .site-head .back{margin-left:0}
+  .palette{grid-template-columns:repeat(auto-fill,minmax(32px,1fr));gap:5px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- setup -->
+  <section id="setup" class="card setup">
+    <h2>Screening 1 &mdash; IQ Test</h2>
+    <p class="muted small">Each batch has exactly 100 questions. A batch number always gives the same set of questions, so you can compare your score with a friend on the same batch.</p>
+    <div class="grid-2">
+      <div class="field">
+        <label for="batch">Batch</label>
+        <select id="batch"></select>
+      </div>
+      <div class="field">
+        <label for="dur">Time limit</label>
+        <select id="dur">
+          <option value="1800">30 minutes (board standard)</option>
+          <option value="2400">40 minutes</option>
+          <option value="3600">60 minutes</option>
+          <option value="0">Untimed practice</option>
+        </select>
+      </div>
+    </div>
+    <div class="row"><button id="begin">Start Test</button></div>
+    <p class="small muted" id="bestLine" style="margin-top:14px"></p>
+  </section>
+
+  <!-- test -->
+  <section id="test" class="hidden">
+    <div class="topbar">
+      <span class="qno" id="qno">Q 1 / 100</span>
+      <span class="timer" id="clock">30:00</span>
+      <span class="spacer"></span>
+      <button id="flag" class="ghost">☆ Review</button>
+      <button id="finish" class="secondary">Submit</button>
+    </div>
+    <div class="bar" style="margin-top:10px"><i id="bar" style="width:0%"></i></div>
+
+    <div class="card qcard">
+      <span class="pill" id="cat">Reasoning</span>
+      <p class="qtext" id="qtext"></p>
+      <div class="opts" id="opts"></div>
+      <div class="navrow">
+        <button id="prev" class="secondary">Previous</button>
+        <button id="next">Next</button>
+        <span class="spacer"></span>
+        <button id="clear" class="ghost">Clear answer</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Question palette</h3>
+      <div class="palette" id="palette"></div>
+    </div>
+  </section>
+
+  <!-- result -->
+  <section id="result" class="hidden result">
+    <div class="card">
+      <div class="score" id="score">0<small>OUT OF 100</small></div>
+      <div id="summary" class="small muted" style="text-align:center;margin-top:8px"></div>
+      <div class="row center" style="margin-top:18px">
+        <button id="again">Try another batch</button>
+        <button id="showRev" class="secondary">Show answers</button>
+        <a class="btn secondary" href="../index.html" style="text-decoration:none">Dashboard</a>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Category breakdown</h3>
+      <div id="cats"></div>
+    </div>
+    <div id="review" class="review hidden"></div>
+  </section>
+
+</div>
+
+<script src="../assets/js/core.js"></script>
+<script src="../assets/js/iq-curated.js"></script>
+<script src="../assets/js/iq-gen.js"></script>
+<script>
+(function(){
+const {$, el, esc, Countdown, fmtClock, store} = ISSB;
+ISSB.mountHeader("Screening 1 — IQ Test", "100 questions per batch · board-style timing", "../index.html");
+
+const KEYS = ["A","B","C","D"];
+let questions = [], answers = [], flags = [], cur = 0, clock = null, limit = 0;
+
+/* batch list */
+const batchSel = $("batch");
+for (let i = 1; i <= IQGen.BATCH_COUNT; i++) {
+  batchSel.appendChild(el("option", null, "Batch " + i)).value = i;
+}
+function refreshBest(){
+  const b = store.get("iq.best", {})[batchSel.value];
+  $("bestLine").textContent = b
+    ? "Your best on this batch: " + b.score + "/100 (" + new Date(b.at).toLocaleDateString() + ")"
+    : "You have not attempted this batch yet.";
+}
+batchSel.onchange = refreshBest;
+refreshBest();
+
+/* ---- start ---- */
+$("begin").onclick = () => {
+  questions = IQGen.buildBatch(Number(batchSel.value));
+  answers = new Array(questions.length).fill(-1);
+  flags = new Array(questions.length).fill(false);
+  cur = 0;
+  limit = Number($("dur").value);
+  $("setup").classList.add("hidden");
+  $("result").classList.add("hidden");
+  $("test").classList.remove("hidden");
+  buildPalette();
+  render();
+  if (limit > 0) {
+    clock = new Countdown({
+      onTick: (left) => {
+        $("clock").textContent = fmtClock(left);
+        $("clock").classList.toggle("low", left <= 60);
+      },
+      onDone: submit
+    });
+    clock.start(limit);
+  } else {
+    $("clock").textContent = "No limit";
+  }
+  window.scrollTo(0,0);
+};
+
+/* ---- rendering ---- */
+function render(){
+  const q = questions[cur];
+  $("qno").textContent = "Q " + (cur+1) + " / " + questions.length;
+  $("cat").textContent = q.cat;
+  $("qtext").textContent = q.q;
+  $("bar").style.width = ((cur+1)/questions.length*100) + "%";
+  $("flag").textContent = flags[cur] ? "★ Marked" : "☆ Review";
+  const box = $("opts");
+  box.innerHTML = "";
+  q.options.forEach((o, i) => {
+    const b = el("button", "opt" + (answers[cur] === i ? " sel" : ""),
+      '<span class="key">' + KEYS[i] + '</span><span>' + esc(o) + '</span>');
+    b.onclick = () => { answers[cur] = i; paintPalette(); render(); };
+    box.appendChild(b);
+  });
+  $("prev").disabled = cur === 0;
+  $("next").textContent = cur === questions.length - 1 ? "Last question" : "Next";
+  $("next").disabled = cur === questions.length - 1;
+  paintPalette();
+}
+
+function buildPalette(){
+  const p = $("palette");
+  p.innerHTML = "";
+  questions.forEach((_, i) => {
+    const b = el("button", "pal", String(i+1));
+    b.onclick = () => { cur = i; render(); window.scrollTo(0,0); };
+    p.appendChild(b);
+  });
+}
+function paintPalette(){
+  [...$("palette").children].forEach((b, i) => {
+    b.className = "pal" + (answers[i] > -1 ? " done" : "") + (flags[i] ? " flag" : "") + (i === cur ? " cur" : "");
+  });
+}
+
+$("prev").onclick = () => { if (cur > 0) { cur--; render(); window.scrollTo(0,0);} };
+$("next").onclick = () => { if (cur < questions.length-1) { cur++; render(); window.scrollTo(0,0);} };
+$("clear").onclick = () => { answers[cur] = -1; render(); };
+$("flag").onclick = () => { flags[cur] = !flags[cur]; render(); };
+
+document.addEventListener("keydown", (e) => {
+  if ($("test").classList.contains("hidden")) return;
+  const k = e.key.toUpperCase();
+  if (KEYS.includes(k)) { answers[cur] = KEYS.indexOf(k); render(); }
+  else if (e.key === "ArrowRight") $("next").click();
+  else if (e.key === "ArrowLeft") $("prev").click();
+});
+
+/* ---- submit ---- */
+$("finish").onclick = () => {
+  const left = answers.filter(a => a < 0).length;
+  if (left && !confirm(left + " question(s) are still unanswered. Submit anyway?")) return;
+  submit();
+};
+
+function submit(){
+  if (clock) clock.stop();
+  let score = 0;
+  const cats = {};
+  questions.forEach((q, i) => {
+    const ok = answers[i] === q.answerIndex;
+    if (ok) score++;
+    cats[q.cat] = cats[q.cat] || {right:0, total:0};
+    cats[q.cat].total++;
+    if (ok) cats[q.cat].right++;
+  });
+
+  const b = store.get("iq.best", {});
+  const key = String(batchSel.value);
+  if (!b[key] || b[key].score < score) b[key] = {score, at: Date.now()};
+  store.set("iq.best", b);
+
+  $("test").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("score").innerHTML = score + "<small>OUT OF " + questions.length + "</small>";
+  const attempted = answers.filter(a => a > -1).length;
+  $("summary").textContent = "Batch " + key + " · attempted " + attempted + " · correct " + score +
+    " · wrong " + (attempted - score) + " · skipped " + (questions.length - attempted);
+
+  const cbox = $("cats");
+  cbox.innerHTML = "";
+  Object.keys(cats).sort().forEach(c => {
+    cbox.appendChild(el("div", "catrow",
+      "<span>" + esc(c) + "</span><span><b>" + cats[c].right + "</b> / " + cats[c].total + "</span>"));
+  });
+
+  const rev = $("review");
+  rev.innerHTML = "";
+  questions.forEach((q, i) => {
+    const ok = answers[i] === q.answerIndex;
+    const given = answers[i] > -1 ? q.options[answers[i]] : "not answered";
+    rev.appendChild(el("div", "rev",
+      '<div class="rq">' + (i+1) + ". " + esc(q.q) + "</div>" +
+      '<div class="ra"><span class="' + (ok ? "ok" : "no") + '">Your answer: ' + esc(given) + "</span><br>" +
+      "<b>Correct: " + esc(q.options[q.answerIndex]) + "</b></div>" +
+      (q.explain ? '<div class="why">' + esc(q.explain) + "</div>" : "")));
+  });
+  window.scrollTo(0,0);
+}
+
+$("again").onclick = () => {
+  $("result").classList.add("hidden");
+  $("review").classList.add("hidden");
+  $("setup").classList.remove("hidden");
+  refreshBest();
+};
+$("showRev").onclick = () => {
+  const r = $("review");
+  r.classList.toggle("hidden");
+  $("showRev").textContent = r.classList.contains("hidden") ? "Show answers" : "Hide answers";
+};
+})();
+</script>
+</body>
+</html>

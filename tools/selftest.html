@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Self test | ISSB Prep</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/app.css">
+<style>
+.line{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.pass{color:var(--ok);font-weight:700}.fail{color:var(--danger);font-weight:700}
+pre{white-space:pre-wrap;font-size:12px;color:var(--ink-2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+  <h2>Self test</h2>
+  <p class="small muted">Developer harness. Checks the IQ batches, the word bank and the PPDT scenes.</p>
+  <div id="out"></div>
+  <pre id="detail"></pre>
+</div>
+</div>
+<script src="../assets/js/core.js"></script>
+<script src="../assets/js/iq-curated.js"></script>
+<script src="../assets/js/iq-gen.js"></script>
+<script src="../assets/js/wat-words.js"></script>
+<script src="../assets/js/ppdt-scenes.js"></script>
+<script>
+const out = document.getElementById("out"), detail = document.getElementById("detail");
+let failures = [];
+function check(name, fn){
+  let ok = false, msg = "";
+  try { const r = fn(); ok = r === true; if (!ok) msg = String(r); }
+  catch (e) { msg = e.message; }
+  const d = document.createElement("div");
+  d.className = "line";
+  d.innerHTML = "<span>" + name + "</span><span class='" + (ok ? "pass'>PASS" : "fail'>FAIL") + "</span>";
+  out.appendChild(d);
+  if (!ok) failures.push(name + " — " + msg);
+}
+
+check("Curated bank has items with 4 options each", () => {
+  const bad = IQ_CURATED.filter(c => !c.q || !Array.isArray(c.o) || c.o.length !== 4 || new Set(c.o).size !== 4);
+  return bad.length === 0 || "bad items: " + bad.length + " first: " + (bad[0] && bad[0].q);
+});
+
+for (let n = 1; n <= IQGen.BATCH_COUNT; n++){
+  check("Batch " + n + ": 100 unique questions, valid keys", () => {
+    const b = IQGen.buildBatch(n);
+    if (b.length !== 100) return "length " + b.length;
+    if (new Set(b.map(q => q.q)).size !== 100) return "duplicate question text";
+    for (const q of b){
+      if (!Array.isArray(q.options) || q.options.length !== 4) return "option count: " + q.q;
+      if (new Set(q.options).size !== 4) return "duplicate options: " + q.q;
+      if (!(q.answerIndex >= 0 && q.answerIndex < 4)) return "answerIndex: " + q.q;
+      if (!q.cat) return "missing category";
+    }
+    return true;
+  });
+}
+
+check("Batches are deterministic", () => {
+  const a = IQGen.buildBatch(5).map(q => q.q + "|" + q.options[q.answerIndex]).join("§");
+  const b = IQGen.buildBatch(5).map(q => q.q + "|" + q.options[q.answerIndex]).join("§");
+  return a === b || "batch 5 differed between two builds";
+});
+
+check("Word bank: unique words, every word has a sentence", () => {
+  const all = [...WAT_EN, ...WAT_BN];
+  if (all.some(x => !x.w || !x.s)) return "missing word or sentence";
+  if (new Set(WAT_EN.map(x=>x.w)).size !== WAT_EN.length) return "duplicate English word";
+  if (new Set(WAT_BN.map(x=>x.w)).size !== WAT_BN.length) return "duplicate Bangla word";
+  return WAT_EN.length >= 50 && WAT_BN.length >= 50 ? true : "bank too small";
+});
+
+check("PPDT: 40 scenes, each renders an <svg>", () => {
+  if (PPDT_SCENES.length !== 40) return "count " + PPDT_SCENES.length;
+  for (const s of PPDT_SCENES){
+    const m = s.svg();
+    if (!/^<svg /.test(m) || !/<\/svg>$/.test(m)) return "scene " + s.id + " bad markup";
+    const p = new DOMParser().parseFromString(m, "image/svg+xml");
+    if (p.querySelector("parsererror")) return "scene " + s.id + " is not valid SVG";
+  }
+  return true;
+});
+
+detail.textContent = failures.length ? failures.join("\n") : "All checks passed.";
+</script>
+</body>
+</html>
