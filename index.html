@@ -25,6 +25,11 @@
 .tile.locked{opacity:.5;pointer-events:none;filter:saturate(.4)}
 .stat{font-size:14px;color:var(--ink-3)}
 .note{margin-top:32px;font-size:15px;color:var(--ink-3);line-height:1.6;text-align:center}
+.banner{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:baseline;text-align:center;
+  padding:14px 18px;border:1px solid rgba(126,162,98,.45);background:rgba(126,162,98,.12);
+  border-radius:12px;line-height:1.55;margin-bottom:8px}
+.banner b{color:var(--accent-2)}
+.banner span{color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -43,6 +48,11 @@
   <div class="hero">
     <h2>ISSB Mock for the Polapains of Cadet Colleges</h2>
     <p>Practice the IQ test, PPDT, WAT &amp; so on exactly the way they are run on the ISSB &mdash; timed, unassisted, one attempt at a time.</p>
+  </div>
+
+  <div class="banner">
+    <b>Recommended &mdash; IQ, WAT, SRT.</b>
+    <span>Other segments are in the process for making better.</span>
   </div>
 
   <div class="section"><h3>Day 1 &mdash; Screening (First Segment)</h3><div class="line"></div></div>
@@ -128,12 +138,19 @@
 <script>
 ISSB.mountHeader("ISSB Prep — Barishal Cadet College", "Day-1 screening drills · practice board style");
 
-/* which drills are ready, shown once per device */
+/* Which drills are ready. Shown once per browser session — a permanent
+   dismissal meant a cadet who closed it once could never find it again. */
 (function(){
   const notice = ISSB.$("notice");
-  if (ISSB.store.get("notice.seen", false)) return;
+  ISSB.store.del("notice.seen");            // clear the old permanent flag
+  let seen = false;
+  try { seen = sessionStorage.getItem("issb.notice") === "1"; } catch (e) {}
+  if (seen) return;
   notice.classList.remove("hidden");
-  const close = () => { notice.classList.add("hidden"); ISSB.store.set("notice.seen", true); };
+  const close = () => {
+    notice.classList.add("hidden");
+    try { sessionStorage.setItem("issb.notice", "1"); } catch (e) {}
+  };
   ISSB.$("noticeOk").onclick = close;
   notice.addEventListener("click", (e) => { if (e.target === notice) close(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });

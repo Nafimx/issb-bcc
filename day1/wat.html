@@ -37,11 +37,11 @@
 
 <div class="card">
   <h2>Word Association Test</h2>
-  <p class="small muted">One batch is two sections: <b>50 English words</b>, then <b>50 Bangla words</b>. Each word is flashed on its own; give one short positive sentence before the next appears. After you press Start the screen holds nothing but the clock and the word.</p>
+  <p class="small muted">One batch holds two sections: <b>50 English words</b> and <b>50 Bangla words</b>. Pick a section with the buttons below &mdash; run one, then the other, in whichever order you like. Each word is flashed on its own; give one short positive sentence before the next appears. Once a section starts the screen holds nothing but the clock and the word.</p>
 
   <div class="sectionline">
-    <div class="sec" id="sec1">Section 1 &mdash; English (50)</div>
-    <div class="sec" id="sec2">Section 2 &mdash; বাংলা (50)</div>
+    <div class="sec" id="sec1">English &mdash; 50 words</div>
+    <div class="sec" id="sec2">বাংলা &mdash; ৫০টি শব্দ</div>
   </div>
 
   <div class="row center" style="margin-top:16px">
@@ -60,7 +60,10 @@
   </div>
 
   <div class="row center" style="margin-top:18px">
-    <button id="start">Start</button>
+    <button id="startEn">Start English (50)</button>
+    <button id="startBn">Start বাংলা (50)</button>
+  </div>
+  <div class="row center" style="margin-top:12px">
     <button id="newBatch" class="secondary">New batch</button>
     <a class="btn ghost" href="../index.html" style="text-decoration:none">Dashboard</a>
   </div>
@@ -97,50 +100,56 @@ ISSB.mountHeader("Word Association Test", "50 English + 50 Bangla per batch · p
 const HARD_EN = 95, HARD_BN = 47;
 const PER_SECTION = 50;
 
-let batch = [], index = -1, clock = null, finished = false;
+let batch = [], section = null, index = -1, clock = null;
+const done = { en: false, bn: false };
 
 function pool(src, hardCount, bn){
   const list = $("mix").value === "hard" ? src.slice(0, hardCount) : src;
   return shuffle(list).slice(0, PER_SECTION).map(x => ({...x, bn: bn}));
 }
 
+/* One batch holds both sections; each button runs its own 50 words. */
 function makeBatch(){
-  batch = pool(WAT_EN, HARD_EN, false).concat(pool(WAT_BN, HARD_BN, true));
+  batch = { en: pool(WAT_EN, HARD_EN, false), bn: pool(WAT_BN, HARD_BN, true) };
+  section = null;
   index = -1;
-  finished = false;
+  done.en = done.bn = false;
   $("slist").innerHTML = "";
   $("slist").classList.add("hidden");
   $("makeSent").textContent = "Make sentences";
-  $("sec1").className = "sec";
-  $("sec2").className = "sec";
-  $("status").textContent = "Batch ready — " + batch.length + " words in two sections.";
+  markSections();
+  $("status").textContent = "New batch ready — 50 English and 50 Bangla words. Pick a section to start.";
 }
 
 function markSections(){
-  const inBangla = index >= PER_SECTION;
-  $("sec1").className = "sec" + (inBangla ? " done" : index > -1 ? " on" : "");
-  $("sec2").className = "sec" + (inBangla ? " on" : "");
+  $("sec1").className = "sec" + (section === "en" ? " on" : done.en ? " done" : "");
+  $("sec2").className = "sec" + (section === "bn" ? " on" : done.bn ? " done" : "");
 }
 
+function words(){ return section ? batch[section] : []; }
+
 function showNext(){
-  if (index >= batch.length - 1){ complete(); return; }
+  if (index >= words().length - 1){ complete(); return; }
   index++;
-  const item = batch[index];
+  const item = words()[index];
   $("fword").textContent = item.w;
   $("fword").className = "fword" + (item.bn ? " bn" : "");
-  markSections();
   clock.reset(Number($("interval").value));
   clock.start();
 }
 
 function complete(){
   clock.stop();
-  if (finished) return;
-  finished = true;
+  if (!section) return;
+  done[section] = true;
+  const name = section === "en" ? "English" : "বাংলা";
+  section = null;
+  index = -1;
+  markSections();
   exitFocus();
-  $("status").textContent = "Batch complete — press “Make sentences” to compare.";
-  $("sec1").className = "sec done";
-  $("sec2").className = "sec done";
+  $("status").textContent = done.en && done.bn
+    ? "Both sections complete — press “Make sentences” to compare."
+    : name + " section complete. Run the other section, or press “Make sentences”.";
   store.set("wat.batches", store.get("wat.batches", 0) + 1);
 }
 
@@ -148,6 +157,15 @@ clock = new Countdown({
   onTick: (left) => { $("fclock").textContent = left; $("fclock").classList.toggle("low", left <= 3); },
   onDone: showNext
 });
+
+function runSection(which){
+  if (!batch.en) makeBatch();
+  section = which;
+  index = -1;
+  markSections();
+  enterFocus();
+  showNext();
+}
 
 function enterFocus(){
   $("focus").classList.remove("hidden");
@@ -158,17 +176,18 @@ function exitFocus(){
   document.body.style.overflow = "";
 }
 
-$("start").onclick = () => {
-  if (finished || !batch.length) makeBatch();
-  enterFocus();
-  showNext();
-};
+$("startEn").onclick = () => runSection("en");
+$("startBn").onclick = () => runSection("bn");
 
 $("fcancel").onclick = () => {
   clock.stop();
+  const stoppedAt = index + 1, total = words().length;
+  section = null;
+  index = -1;
+  markSections();
   exitFocus();
-  $("status").textContent = index > -1
-    ? "Stopped at word " + (index + 1) + " of " + batch.length + " — press Start to run a fresh batch."
+  $("status").textContent = stoppedAt > 0
+    ? "Stopped at word " + stoppedAt + " of " + total + ". Pick a section to start again."
     : "Batch ready.";
 };
 
@@ -183,11 +202,12 @@ $("makeSent").onclick = () => {
     return;
   }
   box.innerHTML = "";
-  batch.forEach((item, i) => {
-    if (i === 0) box.appendChild(el("h4", null, "Section 1 — English"));
-    if (i === PER_SECTION) box.appendChild(el("h4", null, "Section 2 — বাংলা"));
-    box.appendChild(el("div", "sitem" + (item.bn ? " bn" : ""),
-      "<b>" + ((i % PER_SECTION) + 1) + ". " + esc(item.w) + "</b> &mdash; " + esc(item.s)));
+  [["en", "Section 1 — English"], ["bn", "Section 2 — বাংলা"]].forEach(([key, title]) => {
+    box.appendChild(el("h4", null, title));
+    batch[key].forEach((item, i) => {
+      box.appendChild(el("div", "sitem" + (item.bn ? " bn" : ""),
+        "<b>" + (i + 1) + ". " + esc(item.w) + "</b> &mdash; " + esc(item.s)));
+    });
   });
   box.classList.remove("hidden");
   $("makeSent").textContent = "Hide sentences";
