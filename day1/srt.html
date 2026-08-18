@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRT — Situation Reaction Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180809r">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180817s">
 <style>
 .topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -42,37 +42,28 @@
 
 <section id="setup" class="card">
   <h2>Incomplete Sentences &amp; Stories</h2>
-  <p class="muted small">Every item is <b>incomplete and you finish it</b> — either a sentence broken off on a connector, or a story opened in a line or two and left hanging. Both come in <b>English and বাংলা</b>. Keep the grammar correct and the content officer-like: act first, then inform, then follow up. The clock runs for the whole set, so do not stall on one item.</p>
+  <p class="muted small">Every item is <b>incomplete and you finish it</b>. The board sets <b>25 Bangla and 25 English incomplete sentences</b>, and <b>2 Bangla and 2 English incomplete stories</b> — both are here in exactly those numbers. Keep the grammar correct and the content officer-like: act first, then inform, then follow up. The clock runs for the whole set, so do not stall on one item.</p>
   <div class="grid-2" style="margin:16px 0">
     <div class="field">
-      <label for="kind">Question type</label>
+      <label for="kind">Test</label>
       <select id="kind">
-        <option value="mixed" selected>Mixed — sentences, stories and situations</option>
-        <option value="complete">Incomplete sentences</option>
-        <option value="story">Incomplete stories</option>
-        <option value="situation">Situations only</option>
+        <option value="complete" selected>Incomplete Sentence — 25 বাংলা + 25 English</option>
+        <option value="story">Incomplete Story — 2 বাংলা + 2 English</option>
+        <option value="situation">Situation practice (extra)</option>
       </select>
     </div>
-    <div class="field">
-      <label for="lang">Language</label>
-      <select id="lang">
-        <option value="both" selected>English and বাংলা</option>
-        <option value="en">English only</option>
-        <option value="bn">বাংলা only</option>
-      </select>
-    </div>
-    <div class="field">
+    <div class="field" id="countField">
       <label for="count">Questions</label>
       <select id="count">
-        <option value="60" selected>60 (standard set)</option>
-        <option value="30">30 (half set)</option>
-        <option value="15">15 (quick practice)</option>
+        <option value="60" selected>60</option>
+        <option value="30">30</option>
+        <option value="15">15</option>
       </select>
     </div>
     <div class="field">
       <label for="dur">Time limit</label>
       <select id="dur">
-        <option value="auto" selected>30 seconds per situation</option>
+        <option value="auto" selected>Board timing</option>
         <option value="0">Untimed practice</option>
       </select>
     </div>
@@ -124,11 +115,11 @@
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180809r"></script>
-<script src="../assets/js/srt-extra.js?v=202608180809r"></script>
-<script src="../assets/js/srt-stories.js?v=202608180809r"></script>
-<script src="../assets/js/srt-completing.js?v=202608180809r"></script>
-<script src="../assets/js/srt-bank.js?v=202608180809r"></script>
+<script src="../assets/js/core.js?v=202608180817s"></script>
+<script src="../assets/js/srt-extra.js?v=202608180817s"></script>
+<script src="../assets/js/srt-stories.js?v=202608180817s"></script>
+<script src="../assets/js/srt-completing.js?v=202608180817s"></script>
+<script src="../assets/js/srt-bank.js?v=202608180817s"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store, shuffle} = ISSB;
@@ -140,25 +131,34 @@ $("begin").onclick = start;
 
 function tag(list, extra){ return (list || []).map(x => Object.assign({ s: x.s, m: x.m }, extra)); }
 
-function bankFor(kind, lang){
-  const en = lang !== "bn", bn = lang !== "en";
-  let sentences = [], stories = [], situations = [];
-  if (en) sentences = sentences.concat(tag(window.SRT_COMPLETING, { complete: true, lang: "en" }));
-  if (bn) sentences = sentences.concat(tag(window.SRT_COMPLETING_BN, { complete: true, lang: "bn" }));
-  if (en) stories = stories.concat(tag(window.SRT_STORIES_EN, { complete: true, story: true, lang: "en" }));
-  if (bn) stories = stories.concat(tag(window.SRT_STORIES_BN, { complete: true, story: true, lang: "bn" }));
-  if (en) situations = tag(window.SRT_BANK, { complete: false, lang: "en" });
+/* The board's paper, in its own quantities: Bangla first, then English. */
+const SET_SHAPE = {
+  complete: { bn: 25, en: 25, secs: 30 },
+  story:    { bn: 2,  en: 2,  secs: 240 },
+};
 
-  if (kind === "complete") return sentences.length ? sentences : situations;
-  if (kind === "story") return stories.length ? stories : sentences;
-  if (kind === "situation") return situations.length ? situations : sentences;
-  const half = (a, n) => shuffle(a).slice(0, Math.ceil(a.length / n));
-  return half(sentences, 2).concat(half(stories, 1)).concat(half(situations, 3));
+function buildSet(kind, count){
+  if (kind === "situation"){
+    return shuffle(tag(window.SRT_BANK, { complete: false, lang: "en" })).slice(0, count);
+  }
+  const shape = SET_SHAPE[kind];
+  const bnPool = kind === "story" ? window.SRT_STORIES_BN : window.SRT_COMPLETING_BN;
+  const enPool = kind === "story" ? window.SRT_STORIES_EN : window.SRT_COMPLETING;
+  const isStory = kind === "story";
+  const bn = shuffle(tag(bnPool, { complete: true, story: isStory, lang: "bn" })).slice(0, shape.bn);
+  const en = shuffle(tag(enPool, { complete: true, story: isStory, lang: "en" })).slice(0, shape.en);
+  return bn.concat(en);                       // Bangla section first, as the paper lists it
+}
+
+function setSize(kind){
+  if (kind === "situation") return Number($("count").value);
+  const sh = SET_SHAPE[kind];
+  return sh.bn + sh.en;
 }
 
 function start(){
-  const n = Number($("count").value);
-  set = shuffle(bankFor($("kind").value, $("lang").value)).slice(0, n);
+  const kind = $("kind").value;
+  set = buildSet(kind, Number($("count").value));
   answers = new Array(set.length).fill("");
   cur = 0;
   $("setup").classList.add("hidden");
@@ -166,6 +166,7 @@ function start(){
   $("test").classList.remove("hidden");
   render();
   if ($("dur").value === "auto"){
+    const perItem = kind === "story" ? SET_SHAPE.story.secs : 30;
     clock = new Countdown({
       onTick: (left, total) => {
         $("clock").textContent = fmtClock(left);
@@ -173,7 +174,7 @@ function start(){
       },
       onDone: submit
     });
-    clock.start(set.length * 30);
+    clock.start(set.length * perItem);
   } else {
     $("clock").textContent = "No limit";
   }
@@ -265,11 +266,17 @@ $("again").onclick = () => {
 };
 $("print").onclick = () => window.print();
 function refreshCount(){
-  const n = bankFor($("kind").value, $("lang").value).length;
-  $("doneLine").textContent = n + " items available in this selection.";
+  const kind = $("kind").value;
+  const custom = kind === "situation";
+  $("countField").style.display = custom ? "" : "none";
+  const n = setSize(kind);
+  const mins = Math.round((n * (kind === "story" ? SET_SHAPE.story.secs : 30)) / 60);
+  $("doneLine").textContent = custom
+    ? n + " situations, about " + mins + " minutes."
+    : n + " items — " + SET_SHAPE[kind].bn + " বাংলা and " + SET_SHAPE[kind].en +
+      " English, about " + mins + " minutes.";
 }
 $("kind").onchange = refreshCount;
-$("lang").onchange = refreshCount;
 refreshCount();
 
 const done = store.get("srt.sets", 0);
