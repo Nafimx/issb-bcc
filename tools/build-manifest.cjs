@@ -19,3 +19,11 @@ const manifest = {
 
 fs.writeFileSync(path.join(dir, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
 console.log("ppdt manifest: " + files.length + " picture(s)" + (files.length ? " — " + files.join(", ") : ""));
+
+/* stamp the service worker with this build so a deploy retires the old cache */
+const swPath = path.join(__dirname, "..", "sw.js");
+const buildId = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "assets", "build.json"), "utf8")).build;
+let sw = fs.readFileSync(swPath, "utf8");
+sw = sw.replace(/const BUILD = "[^"]*";/, 'const BUILD = "' + buildId + '";');
+fs.writeFileSync(swPath, sw);
+console.log("service worker stamped with build " + buildId);

@@ -143,6 +143,7 @@
         : "");
     const host = document.querySelector(".wrap") || document.body;
     host.insertBefore(head, host.firstChild);
+    initApp();
     const stamp = el("div", "build-stamp no-print", "build " + BUILD);
     stamp.setAttribute("aria-hidden", "true");
     head.appendChild(stamp);
@@ -162,7 +163,7 @@
   /* Self-heal a stale page. Browsers on slow mobile connections were holding an
      old copy of a drill and reporting it as broken. Each build carries a stamp;
      if the server is serving a newer one, reload once (guarded, never loops). */
-  const BUILD = "202608180920y";
+  const BUILD = "202608180925z";
   function checkBuild() {
     fetch("/assets/build.json", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
@@ -179,6 +180,30 @@
       .catch(() => {});
   }
   if (typeof fetch === "function") setTimeout(checkBuild, 800);
+
+  /* ---------- installable app ----------
+     Registers the worker that makes the drills open offline, and shows an
+     Install button only when the browser says the app is installable. */
+  function initApp() {
+    if ("serviceWorker" in navigator && location.protocol === "https:") {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+    let deferred = null;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferred = e;
+      const head = document.querySelector(".site-head");
+      if (!head || document.getElementById("installBtn")) return;
+      const b = el("button", "install-btn no-print", "Install app");
+      b.id = "installBtn";
+      b.onclick = () => {
+        b.remove();
+        deferred.prompt();
+        deferred = null;
+      };
+      head.appendChild(b);
+    });
+  }
 
   global.ISSB = {
     BUILD,
