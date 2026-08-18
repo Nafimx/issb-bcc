@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Screening 1 — IQ Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180557c">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180605d">
 <style>
 .setup .grid-2{margin:14px 0 18px}
 .topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
@@ -133,9 +133,9 @@
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180557c"></script>
-<script src="../assets/js/iq-curated.js?v=202608180557c"></script>
-<script src="../assets/js/iq-gen.js?v=202608180557c"></script>
+<script src="../assets/js/core.js?v=202608180605d"></script>
+<script src="../assets/js/iq-curated.js?v=202608180605d"></script>
+<script src="../assets/js/iq-gen.js?v=202608180605d"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store} = ISSB;
@@ -146,10 +146,28 @@ let questions = [], answers = [], flags = [], cur = 0, clock = null, limit = 0;
 
 /* batch list */
 const batchSel = $("batch");
+batchSel.appendChild(el("option", null, "Random batch")).value = "random";
 for (let i = 1; i <= IQGen.BATCH_COUNT; i++) {
   batchSel.appendChild(el("option", null, "Batch " + i)).value = i;
 }
+
+/* "Random batch" picks one of the fixed batches, so the set is still
+   reproducible afterwards and the score is still comparable with a friend's. */
+let batchNo = 1;
+function resolveBatch(){
+  return batchSel.value === "random"
+    ? 1 + Math.floor(Math.random() * IQGen.BATCH_COUNT)
+    : Number(batchSel.value);
+}
 function refreshBest(){
+  if (batchSel.value === "random"){
+    const best = store.get("iq.best", {});
+    const done = Object.keys(best).length;
+    $("bestLine").textContent = "One of the " + IQGen.BATCH_COUNT +
+      " batches will be picked when you start" +
+      (done ? " — you have attempted " + done + " of them so far." : ".");
+    return;
+  }
   const b = store.get("iq.best", {})[batchSel.value];
   $("bestLine").textContent = b
     ? "Your best on this batch: " + b.score + "/100 (" + new Date(b.at).toLocaleDateString() + ")"
@@ -162,7 +180,8 @@ refreshBest();
 $("begin").onclick = startTest;
 
 function startTest(){
-  questions = IQGen.buildBatch(Number(batchSel.value));
+  batchNo = resolveBatch();
+  questions = IQGen.buildBatch(batchNo);
   answers = new Array(questions.length).fill(-1);
   flags = new Array(questions.length).fill(false);
   cur = 0;
@@ -190,7 +209,7 @@ function startTest(){
 /* ---- rendering ---- */
 function render(){
   const q = questions[cur];
-  $("qno").textContent = "Q " + (cur+1) + " / " + questions.length;
+  $("qno").textContent = "Batch " + batchNo + " · Q " + (cur+1) + " / " + questions.length;
   $("cat").textContent = q.cat;
   $("qtext").textContent = q.q;
   $("bar").style.transform = "scaleX(" + ((cur+1)/questions.length) + ")";
@@ -257,7 +276,7 @@ function submit(){
   });
 
   const b = store.get("iq.best", {});
-  const key = String(batchSel.value);
+  const key = String(batchNo);
   if (!b[key] || b[key].score < score) b[key] = {score, at: Date.now()};
   store.set("iq.best", b);
 
