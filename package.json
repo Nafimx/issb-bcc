@@ -1,0 +1,11 @@
+{
+  "name": "issb-bcc",
+  "private": true,
+  "version": "1.0.0",
+  "description": "ISSB mock drills for the polapains of Barishal Cadet College",
+  "scripts": {
+    "pics": "node tools/build-manifest.cjs",
+    "build": "node tools/build-manifest.cjs",
+    "dev": "npx serve -l 4321 ."
+  }
+}

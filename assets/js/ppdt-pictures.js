@@ -30,7 +30,17 @@
     })).catch(() => []);
   }
 
+  /* ask the browser not to evict these — otherwise a device short on space can
+     quietly drop them and the cadet loses their pictures */
+  function persist() {
+    try {
+      if (navigator.storage && navigator.storage.persist) return navigator.storage.persist();
+    } catch (e) {}
+    return Promise.resolve(false);
+  }
+
   function addLocalPics(files) {
+    persist();
     return openDb().then((db) => Promise.all([...files].map((f) => new Promise((res) => {
       const fr = new FileReader();
       fr.onload = () => {
