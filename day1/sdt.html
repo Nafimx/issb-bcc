@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SDT — Self Description Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180607e">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180626f">
 <style>
 .topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -52,12 +52,12 @@
 
 <section id="test" class="hidden">
   <div class="topbar">
-    <span class="timer" id="clock">15:00</span>
+    <span class="timer" id="clock" role="timer" aria-label="Time left">15:00</span>
     <span class="small muted" id="hint">Write all five parts. Move on if one is hard.</span>
     <span class="spacer"></span>
     <button id="finish" class="secondary">Finish</button>
   </div>
-  <div class="bar" style="margin-top:10px"><i id="bar"></i></div>
+  <div class="bar" role="progressbar" aria-label="Time remaining" style="margin-top:10px"><i id="bar"></i></div>
   <div id="parts"></div>
 </section>
 
@@ -85,8 +85,8 @@
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180607e"></script>
-<script src="../assets/js/topics.js?v=202608180607e"></script>
+<script src="../assets/js/core.js?v=202608180626f"></script>
+<script src="../assets/js/topics.js?v=202608180626f"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store} = ISSB;

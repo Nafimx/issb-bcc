@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Word Association Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180607e">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180626f">
 <style>
 .sectionline{display:flex;gap:10px;margin:14px 0 4px;flex-wrap:wrap}
 .sec{flex:1;min-width:150px;padding:11px 12px;border-radius:11px;border:1px solid var(--line);background:var(--card);
@@ -41,7 +41,7 @@
 
   <div class="sectionline">
     <div class="sec" id="sec1">English &mdash; 50 words</div>
-    <div class="sec" id="sec2">বাংলা &mdash; ৫০টি শব্দ</div>
+    <div class="sec" id="sec2"><span lang="bn">বাংলা</span> &mdash; 50 words</div>
   </div>
 
   <div class="row center" style="margin-top:16px">
@@ -61,13 +61,13 @@
 
   <div class="row center" style="margin-top:18px">
     <button id="startEn">Start English (50)</button>
-    <button id="startBn">Start বাংলা (50)</button>
+    <button id="startBn">Start <span lang="bn">বাংলা</span> (50)</button>
   </div>
   <div class="row center" style="margin-top:12px">
     <button id="newBatch" class="secondary">New batch</button>
     <a class="btn ghost" href="../index.html" style="text-decoration:none">Dashboard</a>
   </div>
-  <div class="small muted" id="status" style="text-align:center;margin-top:12px">Batch ready.</div>
+  <div class="small muted" id="status" role="status" aria-live="polite" style="text-align:center;margin-top:12px">Batch ready.</div>
 </div>
 
 <div class="card" style="margin-top:22px">
@@ -83,14 +83,14 @@ At ISSB the words come about every fifteen seconds. Many are negative on purpose
 </div>
 
 <!-- focus mode -->
-<div class="focus hidden" id="focus">
-  <div class="fclock timer" id="fclock"></div>
-  <div class="fword" id="fword"></div>
+<div class="focus hidden" id="focus" role="dialog" aria-modal="true" aria-label="Word association drill">
+  <div class="fclock timer" id="fclock" role="timer" aria-label="Seconds left for this word"></div>
+  <div class="fword" id="fword" role="status" aria-live="polite" aria-atomic="true"></div>
   <button class="fcancel" id="fcancel">Cancel</button>
 </div>
 
-<script src="../assets/js/core.js?v=202608180607e"></script>
-<script src="../assets/js/wat-words.js?v=202608180607e"></script>
+<script src="../assets/js/core.js?v=202608180626f"></script>
+<script src="../assets/js/wat-words.js?v=202608180626f"></script>
 <script>
 (function(){
 const {$, el, esc, shuffle, Countdown, store} = ISSB;
@@ -135,6 +135,7 @@ function showNext(){
   const item = words()[index];
   $("fword").textContent = item.w;
   $("fword").className = "fword" + (item.bn ? " bn" : "");
+  $("fword").lang = item.bn ? "bn" : "en";
   clock.reset(Number($("interval").value));
   clock.start();
 }

@@ -128,18 +128,29 @@
 
   /* ---------- shared header ---------- */
   function mountHeader(title, subtitle, backHref) {
+    const host0 = document.querySelector(".wrap") || document.body;
+    if (!document.querySelector(".skip-link")) {
+      const skip = el("a", "skip-link", "Skip to content");
+      skip.href = "#main";
+      document.body.insertBefore(skip, document.body.firstChild);
+      host0.id = host0.id || "main";
+      host0.setAttribute("role", "main");
+      host0.setAttribute("tabindex", "-1");
+    }
     const head = el("header", "site-head");
+    head.setAttribute("role", "banner");
     head.innerHTML =
       '<div class="crest">BCC</div>' +
       '<div><h1>' + esc(title) + "</h1>" +
       (subtitle ? '<p class="sub">' + esc(subtitle) + "</p>" : "") +
       "</div>" +
       (backHref
-        ? '<a class="back no-print" href="' + backHref + '">&larr; Dashboard</a>'
+        ? '<a class="back no-print" href="' + backHref + '" aria-label="Back to the dashboard">&larr; Dashboard</a>'
         : "");
     const host = document.querySelector(".wrap") || document.body;
     host.insertBefore(head, host.firstChild);
     const stamp = el("div", "build-stamp no-print", "build " + BUILD);
+    stamp.setAttribute("aria-hidden", "true");
     head.appendChild(stamp);
   }
 
@@ -157,7 +168,7 @@
   /* Self-heal a stale page. Browsers on slow mobile connections were holding an
      old copy of a drill and reporting it as broken. Each build carries a stamp;
      if the server is serving a newer one, reload once (guarded, never loops). */
-  const BUILD = "202608180607e";
+  const BUILD = "202608180626f";
   function checkBuild() {
     fetch("/assets/build.json", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))

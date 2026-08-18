@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Screening 1 — IQ Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180607e">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180626f">
 <style>
 .setup .grid-2{margin:14px 0 18px}
 .topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
@@ -83,17 +83,17 @@
   <section id="test" class="hidden">
     <div class="topbar">
       <span class="qno" id="qno">Q 1 / 100</span>
-      <span class="timer" id="clock">30:00</span>
+      <span class="timer" id="clock" role="timer" aria-label="Time left">30:00</span>
       <span class="spacer"></span>
       <button id="flag" class="ghost">☆ Review</button>
       <button id="finish" class="secondary">Submit</button>
     </div>
-    <div class="bar" style="margin-top:10px"><i id="bar"></i></div>
+    <div class="bar" role="progressbar" aria-label="Progress through the batch" style="margin-top:10px"><i id="bar"></i></div>
 
     <div class="card qcard">
       <span class="pill" id="cat">Reasoning</span>
       <p class="qtext" id="qtext"></p>
-      <div class="opts" id="opts"></div>
+      <div class="opts" id="opts" role="group" aria-labelledby="qtext"></div>
       <div class="navrow">
         <button id="prev" class="secondary">Previous</button>
         <button id="next">Next</button>
@@ -133,9 +133,9 @@
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180607e"></script>
-<script src="../assets/js/iq-curated.js?v=202608180607e"></script>
-<script src="../assets/js/iq-gen.js?v=202608180607e"></script>
+<script src="../assets/js/core.js?v=202608180626f"></script>
+<script src="../assets/js/iq-curated.js?v=202608180626f"></script>
+<script src="../assets/js/iq-gen.js?v=202608180626f"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store} = ISSB;
@@ -233,6 +233,7 @@ function buildPalette(){
   p.innerHTML = "";
   questions.forEach((_, i) => {
     const b = el("button", "pal", String(i+1));
+    b.setAttribute("aria-label", "Go to question " + (i+1));
     b.onclick = () => { cur = i; render(); window.scrollTo(0,0); };
     p.appendChild(b);
   });
@@ -240,6 +241,7 @@ function buildPalette(){
 function paintPalette(){
   [...$("palette").children].forEach((b, i) => {
     b.className = "pal" + (answers[i] > -1 ? " done" : "") + (flags[i] ? " flag" : "") + (i === cur ? " cur" : "");
+    b.setAttribute("aria-label", "Question " + (i+1) + (answers[i] > -1 ? ", answered" : ", not answered") + (flags[i] ? ", marked for review" : "") + (i === cur ? ", current" : ""));
   });
 }
 

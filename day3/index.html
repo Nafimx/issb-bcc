@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Day 3 — Planning, Command &amp; DP's Interview | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180607e">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180626f">
 <style>
 .lead{color:var(--ink-2);line-height:1.65;margin:0 0 4px}
 .evt{margin-top:18px}
@@ -115,9 +115,9 @@ textarea{min-height:150px;font-size:17px}
   <h3><span class="num">4</span> Mutual Assessment</h3>
   <p class="lead">You evaluate every member of your group after the tasks &mdash; communication, teamwork, problem-solving and overall contribution. Fill your group's chest numbers below and rank them honestly; the board compares your judgement with its own.</p>
 
-  <table class="matrix" id="maTable">
+  <div class="table-wrap"><table class="matrix" id="maTable">
     <tr><th>Chest no.</th><th>Best quality</th><th>Weakness</th><th>Rank</th></tr>
-  </table>
+  </table></div>
   <div class="row" style="margin-top:12px">
     <button id="maAdd" class="ghost">+ Add member</button>
     <button id="maPrint" class="secondary">Print / Save PDF</button>
@@ -143,8 +143,8 @@ textarea{min-height:150px;font-size:17px}
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180607e"></script>
-<script src="../assets/js/topics.js?v=202608180607e"></script>
+<script src="../assets/js/core.js?v=202608180626f"></script>
+<script src="../assets/js/topics.js?v=202608180626f"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, shuffle} = ISSB;
@@ -202,10 +202,10 @@ function maAdd(){
   maN++;
   const tr = document.createElement("tr");
   tr.innerHTML =
-    '<td><input type="text" placeholder="' + maN + '"></td>' +
-    '<td><input type="text" placeholder="e.g. kept the group together"></td>' +
-    '<td><input type="text" placeholder="e.g. spoke over others"></td>' +
-    '<td><input type="text" placeholder="1"></td>';
+    '<td><input type="text" aria-label="Chest number" placeholder="' + maN + '"></td>' +
+    '<td><input type="text" aria-label="Best quality" placeholder="e.g. kept the group together"></td>' +
+    '<td><input type="text" aria-label="Weakness" placeholder="e.g. spoke over others"></td>' +
+    '<td><input type="text" aria-label="Rank" placeholder="1"></td>';
   $("maTable").appendChild(tr);
 }
 $("maAdd").onclick = maAdd;
