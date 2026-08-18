@@ -137,16 +137,30 @@
 
   /* ---------------- 6. number analogy ---------------- */
   function numberAnalogy(rng) {
+    /* One worked pair cannot fix a rule — 4 : 16 is both 4×4 and 4², and the
+       two readings give different answers. Two pairs are shown so exactly one
+       rule survives, and multipliers that coincide with a term are rejected. */
     const kind = randInt(rng, 1, 4);
-    const a = randInt(rng, 3, 14), c = randInt(rng, 3, 14);
-    let f, why;
-    if (kind === 1) { f = (x) => x * x; why = "The second number is the square of the first."; }
-    else if (kind === 2) { f = (x) => x * x * x; why = "The second number is the cube of the first."; }
-    else if (kind === 3) { const m = randInt(rng, 3, 9); f = (x) => x * m; why = "The second number is " + m + " times the first."; }
-    else { const k = randInt(rng, 4, 15); f = (x) => x + k; why = "The second number is the first plus " + k + "."; }
+    let a, b, c, f, why;
+    for (let guard = 0; guard < 300; guard++) {
+      a = randInt(rng, 3, 14); b = randInt(rng, 3, 14); c = randInt(rng, 3, 14);
+      if (a === b || b === c || a === c) continue;
+      if (kind === 1) { f = (x) => x * x; why = "The second number is the square of the first."; }
+      else if (kind === 2) { f = (x) => x * x * x; why = "The second number is the cube of the first."; }
+      else if (kind === 3) {
+        const m = randInt(rng, 3, 9);
+        if (m === a || m === b) continue;
+        f = (x) => x * m; why = "The second number is " + m + " times the first.";
+      } else {
+        const k = randInt(rng, 4, 15);
+        if (k === a || k === b) continue;
+        f = (x) => x + k; why = "The second number is the first plus " + k + ".";
+      }
+      break;
+    }
     const ans = f(c);
     return mc(rng, "Number Analogy",
-      a + " : " + f(a) + " :: " + c + " : ?",
+      a + " : " + f(a) + " :: " + b + " : " + f(b) + " :: " + c + " : ?",
       ans, near(ans, 1, -1, c, -c, 2), why);
   }
 

@@ -110,11 +110,13 @@
   /* ---------- 3. odd figure out ---------- */
   function oddFigure(rng) {
     const key = pick(rng, Object.keys(SHAPES));
-    const shape = SHAPES[key];
+    /* the marker dot breaks the symmetry of shapes like the kite, so two
+       rotations can never render identically */
+    const shape = SHAPES[key] + DOT;
     const angles = seededShuffle([0, 90, 180, 270], rng).slice(0, 3);
     const same = angles.map((a) => box(rot(a, shape)));
     const other = pick(rng, Object.keys(SHAPES).filter((k) => k !== key));
-    const odd = box(rot(pick(rng, [0, 90, 180]), SHAPES[other]));
+    const odd = box(rot(pick(rng, [0, 90, 180]), SHAPES[other] + DOT));
     return frame(rng, "Odd Figure Out",
       "Three of these are the same figure simply turned round. Which one is different?",
       odd, same, "The other three are one figure at different rotations; this one is a different figure.");
@@ -227,8 +229,16 @@
     const twice = rng() < 0.35;                 // folded twice: each punch makes four
     const total = holes * (twice ? 4 : 2);
     const vertical = rng() < 0.5;
+    void 0;
+    void 0;
+    /* keep every punch clear of the crease: on the crease it would pass
+       through one layer only and the count would not double */
     const pts = [];
-    for (let i = 0; i < holes; i++) pts.push([24 + (i % 3) * 13, 28 + Math.floor(i / 3) * 16 + (i % 2) * 8]);
+    for (let i = 0; i < holes; i++) {
+      const x = vertical ? 20 + (i % 3) * 7 : 22 + (i % 3) * 14;
+      const y = vertical ? 26 + Math.floor(i / 3) * 18 + (i % 2) * 9 : 20 + Math.floor(i / 3) * 8 + (i % 2) * 6;
+      pts.push([x, y]);
+    }
     const crease = vertical
       ? '<path d="M45 14 L45 76" stroke-dasharray="4 4"/>'
       : '<path d="M14 45 L76 45" stroke-dasharray="4 4"/>';

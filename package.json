@@ -5,7 +5,8 @@
   "description": "ISSB mock drills for the polapains of Barishal Cadet College",
   "scripts": {
     "pics": "node tools/build-manifest.cjs",
-    "build": "node tools/build-manifest.cjs",
-    "dev": "npx serve -l 4321 ."
+    "build": "node tools/audit-iq.cjs && node tools/build-manifest.cjs",
+    "dev": "npx serve -l 4321 .",
+    "audit": "node tools/audit-iq.cjs"
   }
 }

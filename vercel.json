@@ -29,6 +29,6 @@
       ]
     }
   ],
-  "buildCommand": "node tools/build-manifest.cjs",
+  "buildCommand": "node tools/audit-iq.cjs && node tools/build-manifest.cjs",
   "outputDirectory": "."
 }
