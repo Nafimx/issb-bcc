@@ -181,11 +181,29 @@ function nonverbal(q, where) {
   }
 }
 
+/* ---------- cross-batch repeats ----------
+   A cadet who works through several batches should rarely see the same
+   question twice. Some non-verbal categories are physically bounded (a die
+   only has 6 faces) so a handful of repeats is unavoidable; everything else
+   should stay low. This does not gate the build (the bound below is a
+   regression tripwire, not a promise of zero), but it must never silently
+   get worse. */
+const crossBatchSeen = new Map();
+let crossBatchDupTotal = 0;
+const crossBatchDupByCat = {};
+
 /* ---------- run over every batch ---------- */
 for (let n = 1; n <= window.IQGen.BATCH_COUNT; n++) {
   const b = window.IQGen.buildBatch(n);
   if (b.length !== 100) flaws.push("batch " + n + " has " + b.length + " questions");
   b.forEach((q, i) => {
+    const dupKey = q.q + "¦" + [...q.options].sort().join("|");
+    if (crossBatchSeen.has(dupKey)) {
+      crossBatchDupTotal++;
+      crossBatchDupByCat[q.cat] = (crossBatchDupByCat[q.cat] || 0) + 1;
+    } else {
+      crossBatchSeen.set(dupKey, n);
+    }
     const where = "b" + n + "q" + (i + 1);
     structural(q, where);
     reSolve(q, where);
@@ -222,6 +240,13 @@ const EXPECT = {
 Object.keys(EXPECT).forEach((k) => {
   if (!checked[k]) flaws.push("COVERAGE: nothing was re-solved for " + k + " — the checker is not seeing those items");
 });
+
+console.log("cross-batch duplicate questions:", crossBatchDupTotal, JSON.stringify(crossBatchDupByCat));
+const CROSS_BATCH_DUP_MAX = 450; // regression tripwire — raise only if a category's design genuinely cannot go lower
+if (crossBatchDupTotal > CROSS_BATCH_DUP_MAX) {
+  flaws.push("REPEATS: " + crossBatchDupTotal + " duplicate questions across the " + window.IQGen.BATCH_COUNT +
+    " batches, over the " + CROSS_BATCH_DUP_MAX + " tripwire — cadets doing several batches will see repeats");
+}
 
 console.log("independently re-solved:", JSON.stringify(checked));
 console.log("flaws found:", flaws.length);

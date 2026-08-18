@@ -330,7 +330,17 @@
 
   /* ---------------- 14. work and time ---------------- */
   const WORK_PAIRS = [[12, 4, 3], [20, 5, 4], [6, 3, 2], [15, 10, 6], [12, 6, 4], [30, 20, 12],
-    [10, 15, 6], [9, 18, 6], [24, 8, 6], [12, 24, 8], [21, 28, 12], [18, 9, 6], [16, 48, 12], [35, 14, 10], [45, 9, 7.5]];
+    [10, 15, 6], [9, 18, 6], [24, 8, 6], [12, 24, 8], [21, 28, 12], [18, 9, 6], [16, 48, 12], [35, 14, 10], [45, 9, 7.5],
+    [4, 12, 3], [4, 28, 3.5], [5, 20, 4], [5, 45, 4.5], [6, 12, 4], [6, 18, 4.5], [6, 30, 5], [6, 66, 5.5],
+    [7, 42, 6], [8, 24, 6], [8, 56, 7], [9, 45, 7.5], [9, 72, 8], [10, 30, 7.5], [10, 40, 8], [12, 20, 7.5],
+    [12, 36, 9], [12, 60, 10], [14, 35, 10], [14, 42, 10.5], [15, 30, 10], [15, 35, 10.5], [15, 60, 12], [15, 75, 12.5],
+    [18, 36, 12], [18, 54, 13.5], [18, 63, 14], [20, 30, 12], [20, 60, 15], [20, 80, 16], [21, 42, 14], [21, 77, 16.5],
+    [22, 66, 16.5], [24, 40, 15], [24, 48, 16], [24, 72, 18], [26, 78, 19.5], [27, 54, 18], [28, 70, 20], [30, 42, 17.5],
+    [30, 45, 18], [30, 60, 20], [30, 70, 21], [33, 66, 22], [35, 63, 22.5],
+    [7, 91, 6.5], [10, 90, 9], [12, 84, 10.5], [14, 84, 12], [18, 90, 15], [28, 84, 21],
+    [30, 90, 22.5], [33, 88, 24], [36, 45, 20], [36, 60, 22.5], [36, 72, 24], [39, 78, 26],
+    [40, 60, 24], [40, 88, 27.5], [42, 56, 24], [42, 84, 28], [44, 77, 28], [45, 90, 30],
+    [48, 80, 30], [50, 75, 30]];
   function work(rng) {
     const [a, b, t] = pick(rng, WORK_PAIRS);
     const ans = t + " days";
@@ -449,7 +459,7 @@
     { name: "Speed & Distance",      gen: [speed] },
     { name: "Percentage & Ratio",    gen: [percentage, ratio] },
     { name: "Average & Arithmetic",  gen: [average, arithmetic, counting] },
-    { name: "Odd One Out",           gen: [oddOneOutNumber], curated: ["Odd One Out"], curatedShare: 3 },
+    { name: "Odd One Out",           gen: [oddOneOutNumber], curated: ["Odd One Out"], curatedShare: 1 },
     { name: "Verbal Analogy",        curated: ["Verbal Analogy"] },
     { name: "Synonyms",              curated: ["Synonyms"] },
     { name: "Antonyms",              curated: ["Antonyms"] },
@@ -459,18 +469,24 @@
   ];
 
   /* The board's paper is about half non-verbal, so the batch is built to that
-     shape: 20 verbal categories at 3 each (60) and 8 non-verbal at 5 each (40). */
+     shape: 20 verbal categories at 3 each (60) and 8 non-verbal categories
+     totalling 40. Quotas are NOT split evenly — a few categories (Mirror
+     Image, Counting Figures, Dice, Paper Folding) only have a small number of
+     truly distinct questions they can construct, so they draw fewer per
+     batch; the categories with large combinatorial space (Figure Series,
+     Figure Analogy, Odd Figure Out, Number Matrix) make up the rest. This
+     keeps cross-batch repeats rare without shrinking the overall test. */
   const NONVERBAL = [
-    "Figure Series", "Mirror Image", "Odd Figure Out", "Figure Analogy",
-    "Counting Figures", "Dice", "Paper Folding", "Number Matrix",
+    ["Figure Series", 7], ["Mirror Image", 3], ["Odd Figure Out", 6], ["Figure Analogy", 7],
+    ["Counting Figures", 3], ["Dice", 3], ["Paper Folding", 4], ["Number Matrix", 7],
   ];
-  NONVERBAL.forEach((name) => CATEGORIES.push({ name: name, nonverbal: true }));
+  NONVERBAL.forEach(([name, quota]) => CATEGORIES.push({ name: name, nonverbal: true, quota: quota }));
 
   const BATCH_COUNT = 24;   // raise to add more batches — nothing else changes
   const PER_CAT = 3;        // per verbal category
   const PER_NV = 5;         // per non-verbal category
   const BATCH_SIZE = 100;
-  const quotaFor = (cat) => (cat.nonverbal ? PER_NV : PER_CAT);
+  const quotaFor = (cat) => (cat.quota != null ? cat.quota : cat.nonverbal ? PER_NV : PER_CAT);
 
   function curatedPool(names) {
     const all = global.IQ_CURATED || [];

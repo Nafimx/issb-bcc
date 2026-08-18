@@ -60,12 +60,20 @@
   const rot = (d, inner) => '<g transform="rotate(' + d + " " + C + " " + C + ')">' + inner + "</g>";
 
   const SHAPES = {
-    arrow:  '<path d="M45 20 L45 70 M45 20 L34 33 M45 20 L56 33"/>',
-    flag:   '<path d="M32 70 L32 20 L62 30 L32 40"/>',
-    tee:    '<path d="M25 30 L65 30 M45 30 L45 68"/>',
-    hook:   '<path d="M30 25 L30 60 q0 10 12 10 t12 -10"/>',
-    zigzag: '<path d="M26 62 L38 34 L50 62 L62 34"/>',
-    kite:   '<path d="M45 18 L66 45 L45 72 L24 45z M24 45 L66 45"/>',
+    arrow:   '<path d="M45 20 L45 70 M45 20 L34 33 M45 20 L56 33"/>',
+    flag:    '<path d="M32 70 L32 20 L62 30 L32 40"/>',
+    tee:     '<path d="M25 30 L65 30 M45 30 L45 68"/>',
+    hook:    '<path d="M30 25 L30 60 q0 10 12 10 t12 -10"/>',
+    zigzag:  '<path d="M26 62 L38 34 L50 62 L62 34"/>',
+    kite:    '<path d="M45 18 L66 45 L45 72 L24 45z M24 45 L66 45"/>',
+    chevron: '<path d="M24 60 L45 26 L66 60 M45 26 L45 68"/>',
+    cross:   '<path d="M45 22 L45 68 M22 30 L68 60 M68 30 L22 60"/>',
+    step:    '<path d="M22 62 L22 44 L45 44 L45 26 L68 26"/>',
+    fork:    '<path d="M45 68 L45 40 M45 40 L28 22 M45 40 L62 22"/>',
+    bowtie:  '<path d="M24 26 L66 26 L24 64 L66 64z"/>',
+    comb:    '<path d="M22 26 L68 26 M28 26 L28 64 M45 26 L45 58 M62 26 L62 64"/>',
+    pennant: '<path d="M28 68 L28 22 L68 34 L28 46z"/>',
+    lightning:'<path d="M50 20 L30 48 L44 48 L38 70 L62 40 L48 40z"/>',
   };
   const DOT = '<circle cx="68" cy="24" r="5" fill="' + INK + '"/>';
 
@@ -93,18 +101,22 @@
   function mirrorImage(rng) {
     const key = pick(rng, Object.keys(SHAPES));
     const shape = SHAPES[key] + DOT;
-    const mirrored = '<g transform="translate(' + S + ',0) scale(-1,1)">' + shape + "</g>";
-    const right = box(mirrored);
-    const wrongs = [
-      box(shape),
-      box(rot(180, shape)),
-      box('<g transform="translate(0,' + S + ') scale(1,-1)">' + shape + "</g>"),
-      box(rot(90, mirrored)),
-    ];
+    const vertical = rng() < 0.5;
+    const flipped = vertical
+      ? '<g transform="translate(' + S + ',0) scale(-1,1)">' + shape + "</g>"
+      : '<g transform="translate(0,' + S + ') scale(1,-1)">' + shape + "</g>";
+    const other = vertical
+      ? '<g transform="translate(0,' + S + ') scale(1,-1)">' + shape + "</g>"
+      : '<g transform="translate(' + S + ',0) scale(-1,1)">' + shape + "</g>";
+    const right = box(flipped);
+    const wrongs = [box(shape), box(rot(180, shape)), box(other), box(rot(90, flipped))];
     return frame(rng, "Mirror Image",
-      "Which option is the mirror image of the figure on the left, seen in a vertical mirror?" +
+      "Which option is the mirror image of the figure on the left, seen in a " +
+      (vertical ? "vertical" : "horizontal") + " mirror?" +
       "<div class=\"figrow\">" + box(shape, 66) + "</div>",
-      right, wrongs, "A vertical mirror flips left and right but not top and bottom.");
+      right, wrongs,
+      vertical ? "A vertical mirror flips left and right but not top and bottom."
+               : "A horizontal mirror flips top and bottom but not left and right.");
   }
 
   /* ---------- 3. odd figure out ---------- */
@@ -149,7 +161,7 @@
   function countFigures(rng) {
     if (rng() < 0.5) {
       // a triangle cut by lines from the apex: n sections give n(n+1)/2 triangles
-      const n = randInt(rng, 2, 7);
+      const n = randInt(rng, 2, 9);
       const total = (n * (n + 1)) / 2;
       let inner = '<path d="M10 78 L80 78 L45 14z"/>';
       for (let i = 1; i < n; i++) {
@@ -166,7 +178,7 @@
       };
     }
     // an n x n grid of squares holds n^2 + (n-1)^2 + ... + 1 squares
-    const n = randInt(rng, 2, 4);
+    const n = randInt(rng, 2, 5);
     let total = 0;
     for (let k = 1; k <= n; k++) total += k * k;
     let inner = "";
@@ -225,7 +237,7 @@
   /* ---------- 7. paper folding and punching ----------
      Fold once, punch h holes, unfold: the holes double and appear mirrored. */
   function paperFold(rng) {
-    const holes = randInt(rng, 1, 5);
+    const holes = randInt(rng, 1, 6);
     const twice = rng() < 0.35;                 // folded twice: each punch makes four
     const total = holes * (twice ? 4 : 2);
     const vertical = rng() < 0.5;

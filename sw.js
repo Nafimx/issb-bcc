@@ -12,7 +12,7 @@
    The cache name carries the build, so a new deploy drops the old cache
    wholesale rather than leaving a half-old, half-new mixture behind. */
 
-const BUILD = "202608180925z";
+const BUILD = "202608181354z";
 const SHELL = "issb-shell-" + BUILD;
 const MEDIA = "issb-media-v1";              // plates are immutable; keep across builds
 
