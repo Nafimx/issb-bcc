@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAT — Thematic Apperception Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180757q">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180809r">
 <style>
 .pic{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#8f8f8f;aspect-ratio:3/2}
 .pic svg{display:block;width:100%;height:100%;filter:grayscale(1) blur(10px) contrast(1.1)}
@@ -19,6 +19,10 @@
 .timerbox .timer{font-size:38px}
 .timerbox .what{font-size:16px;color:var(--ink-2);line-height:1.5}
 .slidecount{font-weight:700;letter-spacing:.4px}
+.langtag{display:inline-block;margin-left:8px;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:800;
+  letter-spacing:.6px;background:rgba(126,162,98,.16);color:var(--accent-2);border:1px solid rgba(126,162,98,.4)}
+.langtag.bn{background:rgba(212,165,92,.16);color:var(--warn);border-color:rgba(212,165,92,.45)}
+textarea.bn{font-family:"Noto Sans Bengali","Nirmala UI",system-ui,sans-serif}
 .slider{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink-2)}
 .slider input[type=range]{width:150px}
 .story textarea{min-height:210px;font-size:17px}
@@ -37,14 +41,23 @@
 
 <section id="setup" class="card">
   <h2>Thematic Apperception Test</h2>
-  <p class="muted small">Eleven pictures and one blank slide. Each picture is shown for 30 seconds, then you have 4 minutes to write a story on it. The blank slide comes last: you imagine your own picture and write a story on it. The clock runs on its own — the whole set takes about 55 minutes, exactly like the board.</p>
+  <p class="muted small">Four pictures, shown one by one. Each is on screen for <b>30 seconds</b>, then you get <b>3 minutes</b> to write a story on it. The test measures your power of observation, and because it is a psychological test the story must be <b>constructive and positive</b>.</p>
+  <p class="muted small" style="margin-top:10px"><b>Two stories are written in Bangla and two in English.</b> Many candidates forget this and lose marks — the language for each picture is shown on screen while you write.</p>
   <div class="grid-2" style="margin:16px 0">
     <div class="field">
-      <label for="count">Slides</label>
+      <label for="count">Pictures</label>
       <select id="count">
-        <option value="12" selected>Full set — 11 pictures + 1 blank</option>
-        <option value="6">Short set — 5 pictures + 1 blank</option>
-        <option value="3">Quick practice — 2 pictures + 1 blank</option>
+        <option value="4" selected>Full set — 4 pictures</option>
+        <option value="2">Short set — 2 pictures</option>
+        <option value="1">Single picture</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="order">Language order</label>
+      <select id="order">
+        <option value="ENBN" selected>English first, then বাংলা</option>
+        <option value="BNEN">বাংলা first, then English</option>
+        <option value="ALT">Alternate — English, বাংলা, English, বাংলা</option>
       </select>
     </div>
     <div class="field">
@@ -52,11 +65,11 @@
       <div class="slider"><input type="range" id="blur" min="1" max="24" value="10"><span id="blurVal">10 px</span></div>
     </div>
     <div class="field">
-      <label for="write">Writing time per slide</label>
+      <label for="write">Writing time per picture</label>
       <select id="write">
-        <option value="240" selected>4 minutes (standard)</option>
-        <option value="300">5 minutes</option>
-        <option value="180">3 minutes</option>
+        <option value="180" selected>3 minutes (standard)</option>
+        <option value="240">4 minutes</option>
+        <option value="120">2 minutes</option>
       </select>
     </div>
   </div>
@@ -67,7 +80,7 @@
 
 <section id="test" class="hidden">
   <div class="row" style="justify-content:space-between">
-    <span class="slidecount" id="slideNo">Slide 1 / 12</span>
+    <span class="slidecount" id="slideNo">Picture 1 / 4</span>
     <span class="small muted" id="phaseName">Observe</span>
   </div>
 
@@ -85,8 +98,8 @@
   <div class="bar" role="progressbar" aria-label="Slide progress" style="margin-top:10px"><i id="bar"></i></div>
 
   <div class="card story hidden" id="stage" style="margin-top:16px">
-    <h3>Story</h3>
-    <p class="small muted">One hero, a clear action, a workable outcome. What led to the scene, what is happening, what follows.</p>
+    <h3>Story <span class="langtag" id="langTag"></span></h3>
+    <p class="small muted">One hero, a clear action, a workable outcome. What led to the scene, what is happening, what follows. Keep it constructive and positive.</p>
     <textarea id="story" placeholder="Write your story here…"></textarea>
   </div>
 </section>
@@ -94,7 +107,7 @@
 <section id="review" class="hidden">
   <div class="card">
     <h2>Your TAT set</h2>
-    <p class="small muted">Nothing is auto-marked. Read your own set: the same hero should appear across the stories — resourceful, positive, acting himself.</p>
+    <p class="small muted">Nothing is auto-marked. Read your own set: the same hero should appear across the stories — resourceful, positive, acting himself. Check that two stories are in Bangla and two in English, as the board requires.</p>
     <div id="revList"></div>
     <div class="row no-print" style="margin-top:18px">
       <button id="again">Another set</button>
@@ -106,15 +119,25 @@
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180757q"></script>
-<script src="../assets/js/ppdt-pictures.js?v=202608180757q"></script>
-<script src="../assets/js/ppdt-scenes.js?v=202608180757q"></script>
+<script src="../assets/js/core.js?v=202608180809r"></script>
+<script src="../assets/js/ppdt-pictures.js?v=202608180809r"></script>
+<script src="../assets/js/ppdt-scenes.js?v=202608180809r"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store, shuffle} = ISSB;
-ISSB.mountHeader("TAT — Thematic Apperception Test", "11 pictures + 1 blank · 30s look, 4 min write", "../index.html");
+ISSB.mountHeader("TAT — Thematic Apperception Test", "4 pictures · 30s look, 3 min write · 2 Bangla, 2 English", "../index.html");
 
 const VIEW = 30;
+let langs = [];                 // required language for each picture
+
+function planLanguages(n){
+  const order = $("order").value;
+  const base = order === "BNEN" ? ["bn", "bn", "en", "en"]
+             : order === "ALT"  ? ["en", "bn", "en", "bn"]
+             :                    ["en", "en", "bn", "bn"];
+  return base.slice(0, n);
+}
+const langName = (l) => (l === "bn" ? "বাংলা" : "English");
 let PICS = [];
 PPDT_PICTURES.load("../").then(list => { PICS = list; });
 
@@ -147,7 +170,8 @@ function start(){
   const n = Number($("count").value);
   writeSecs = Number($("write").value);
   if (!PICS.length){ alert("Pictures are still loading — try again in a moment."); return; }
-  slides = shuffle(PICS).slice(0, n - 1).concat([null]);   // null = the blank slide
+  slides = shuffle(PICS).slice(0, n);
+  langs = planLanguages(n);
   stories = new Array(slides.length).fill("");
   i = 0; phase = 0;
   $("setup").classList.add("hidden");
@@ -166,7 +190,7 @@ function tick(left, total){
 
 function runSlide(){
   const s = slides[i];
-  $("slideNo").textContent = "Slide " + (i+1) + " / " + slides.length;
+  $("slideNo").textContent = "Picture " + (i+1) + " / " + slides.length;
   if (s){
     renderPicture($("picSvg"), s);
     applyBlur();
@@ -177,8 +201,8 @@ function runSlide(){
   }
   phase = 0;
   $("phaseName").textContent = "Observe";
-  $("what").textContent = s ? "Look at the picture. Do not write yet."
-                            : "Blank slide — picture your own scene. Do not write yet.";
+  $("what").textContent = "Look at the picture. Do not write yet — the story for this one must be in " +
+    langName(langs[i]) + ".";
   $("stage").classList.add("hidden");
   $("story").value = "";
   $("story").readOnly = false;
@@ -188,8 +212,14 @@ function runSlide(){
 
 function startWriting(){
   phase = 1;
+  const lang = langs[i];
   $("phaseName").textContent = "Write";
-  $("what").textContent = "Write the story now.";
+  $("what").textContent = "Write the story now — in " + langName(lang) + ".";
+  $("langTag").textContent = "in " + langName(lang);
+  $("langTag").className = "langtag" + (lang === "bn" ? " bn" : "");
+  $("story").className = lang === "bn" ? "bn" : "";
+  $("story").lang = lang;
+  $("story").placeholder = lang === "bn" ? "এখানে বাংলায় গল্প লিখুন…" : "Write your story in English…";
   $("stage").classList.remove("hidden");
   $("story").focus();
   clock.reset(writeSecs);
@@ -215,8 +245,8 @@ function finish(){
     const d = el("div", "rev");
     d.innerHTML =
       '<div class="revrow">' +
-      '<div class="revpic">' + (s ? (s.kind === "img" ? '<img src="' + s.src + '" alt="">' : s.svg()) : '<div style="padding:30px 10px;text-align:center;color:#555;font-size:12px">BLANK SLIDE</div>') + "</div>" +
-      '<div class="rtext"><div class="rt">Slide ' + (k+1) + " · " + words + " words</div>" +
+      '<div class="revpic">' + (s.kind === "img" ? '<img src="' + s.src + '" alt="">' : s.svg()) + "</div>" +
+      '<div class="rtext"><div class="rt">Picture ' + (k+1) + " · " + langName(langs[k]) + " · " + words + " words</div>" +
       '<div class="rs">' + esc(stories[k] || "— not written —") + "</div></div></div>";
     box.appendChild(d);
   });

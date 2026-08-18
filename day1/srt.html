@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRT — Situation Reaction Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180757q">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180809r">
 <style>
 .topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -14,6 +14,8 @@
 .topbar .spacer{flex:1}
 /* the situation is the thing being read: it leads the answer box by ~1.5x */
 .sit{font-size:clamp(21px,3.2vw,27px);line-height:1.45;margin:8px 0 16px}
+.sit.bn,textarea.bn,.rq[lang=bn],.ra[lang=bn],.model[lang=bn]{font-family:"Noto Sans Bengali","Nirmala UI",system-ui,sans-serif}
+.sit.bn{line-height:1.7}
 .answer textarea{min-height:110px;font-size:17px}
 /* the answer continues the situation, so the lead-in sits with the writing box */
 .answerrow{display:flex;align-items:flex-start;gap:10px}
@@ -39,15 +41,24 @@
 <div class="wrap">
 
 <section id="setup" class="card">
-  <h2>Situation Reaction Test</h2>
-  <p class="muted small">Every item is an <b>incomplete sentence and you finish it</b>, in the form used by HSC completing sentences — a clause left hanging on a connector such as <i>lest, so that, no sooner&hellip;than, it is high time, unless</i>. Keep the grammar correct and the content officer-like: act first, then inform, then follow up. About thirty seconds each, and the clock runs for the whole set, so do not stall on one item.</p>
+  <h2>Incomplete Sentences &amp; Stories</h2>
+  <p class="muted small">Every item is <b>incomplete and you finish it</b> — either a sentence broken off on a connector, or a story opened in a line or two and left hanging. Both come in <b>English and বাংলা</b>. Keep the grammar correct and the content officer-like: act first, then inform, then follow up. The clock runs for the whole set, so do not stall on one item.</p>
   <div class="grid-2" style="margin:16px 0">
     <div class="field">
       <label for="kind">Question type</label>
       <select id="kind">
-        <option value="complete">Completing sentences</option>
-        <option value="mixed" selected>Mixed — completing sentences and situations</option>
+        <option value="mixed" selected>Mixed — sentences, stories and situations</option>
+        <option value="complete">Incomplete sentences</option>
+        <option value="story">Incomplete stories</option>
         <option value="situation">Situations only</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="lang">Language</label>
+      <select id="lang">
+        <option value="both" selected>English and বাংলা</option>
+        <option value="en">English only</option>
+        <option value="bn">বাংলা only</option>
       </select>
     </div>
     <div class="field">
@@ -113,30 +124,41 @@
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180757q"></script>
-<script src="../assets/js/srt-completing.js?v=202608180757q"></script>
-<script src="../assets/js/srt-bank.js?v=202608180757q"></script>
+<script src="../assets/js/core.js?v=202608180809r"></script>
+<script src="../assets/js/srt-extra.js?v=202608180809r"></script>
+<script src="../assets/js/srt-stories.js?v=202608180809r"></script>
+<script src="../assets/js/srt-completing.js?v=202608180809r"></script>
+<script src="../assets/js/srt-bank.js?v=202608180809r"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store, shuffle} = ISSB;
-ISSB.mountHeader("SRT — Situation Reaction Test", "60 situations · 30 minutes · act, inform, follow up", "../index.html");
+ISSB.mountHeader("SRT — incomplete sentences & stories", "finish what is started · English and বাংলা", "../index.html");
 
 let set = [], answers = [], cur = 0, clock = null;
 
 $("begin").onclick = start;
 
-function bankFor(kind){
-  const complete = (window.SRT_COMPLETING || []).map(x => ({ s: x.s, m: x.m, complete: true }));
-  const situations = (window.SRT_BANK || []).map(x => ({ s: x.s, m: x.m, complete: false }));
-  if (kind === "complete") return complete.length ? complete : situations;
-  if (kind === "situation") return situations;
-  return shuffle(complete).slice(0, Math.ceil(complete.length / 2))
-    .concat(shuffle(situations).slice(0, Math.ceil(situations.length / 2)));
+function tag(list, extra){ return (list || []).map(x => Object.assign({ s: x.s, m: x.m }, extra)); }
+
+function bankFor(kind, lang){
+  const en = lang !== "bn", bn = lang !== "en";
+  let sentences = [], stories = [], situations = [];
+  if (en) sentences = sentences.concat(tag(window.SRT_COMPLETING, { complete: true, lang: "en" }));
+  if (bn) sentences = sentences.concat(tag(window.SRT_COMPLETING_BN, { complete: true, lang: "bn" }));
+  if (en) stories = stories.concat(tag(window.SRT_STORIES_EN, { complete: true, story: true, lang: "en" }));
+  if (bn) stories = stories.concat(tag(window.SRT_STORIES_BN, { complete: true, story: true, lang: "bn" }));
+  if (en) situations = tag(window.SRT_BANK, { complete: false, lang: "en" });
+
+  if (kind === "complete") return sentences.length ? sentences : situations;
+  if (kind === "story") return stories.length ? stories : sentences;
+  if (kind === "situation") return situations.length ? situations : sentences;
+  const half = (a, n) => shuffle(a).slice(0, Math.ceil(a.length / n));
+  return half(sentences, 2).concat(half(stories, 1)).concat(half(situations, 3));
 }
 
 function start(){
   const n = Number($("count").value);
-  set = shuffle(bankFor($("kind").value)).slice(0, n);
+  set = shuffle(bankFor($("kind").value, $("lang").value)).slice(0, n);
   answers = new Array(set.length).fill("");
   cur = 0;
   $("setup").classList.add("hidden");
@@ -173,11 +195,22 @@ function leadOf(text){
 function render(){
   const item = set[cur];
   $("qno").textContent = (cur+1) + " / " + set.length;
-  $("sit").textContent = item.complete ? item.s + " …" : item.s;
+  $("sit").textContent = item.complete ? item.s + " —" : item.s;
   const lead = item.complete ? "" : leadOf(item.s);
   $("lead").textContent = lead ? lead + " …" : "";
-  $("ansLabel").textContent = item.complete ? "Complete the sentence" : (lead ? "Finish the sentence" : "Your reaction");
-  $("ans").placeholder = item.complete ? "…the rest of the sentence." : (lead ? "…what he did next." : "What he did.");
+  $("ansLabel").textContent = item.story ? "Finish the story"
+    : item.complete ? "Complete the sentence"
+    : (lead ? "Finish the sentence" : "Your reaction");
+  $("ans").placeholder = item.story
+    ? (item.lang === "bn" ? "…গল্পটি শেষ করুন।" : "…carry the story to its end.")
+    : item.complete
+      ? (item.lang === "bn" ? "…বাকি অংশ লিখুন।" : "…the rest of the sentence.")
+      : (lead ? "…what he did next." : "What he did.");
+  $("sit").lang = item.lang || "en";
+  $("sit").className = "sit" + (item.lang === "bn" ? " bn" : "");
+  $("ans").lang = item.lang || "en";
+  $("ans").className = item.lang === "bn" ? "bn" : "";
+  $("ans").rows = item.story ? 6 : 3;
   $("ans").value = answers[cur];
   $("bar").style.transform = "scaleX(" + ((cur+1)/set.length) + ")";
   $("prev").disabled = cur === 0;
@@ -217,9 +250,9 @@ function submit(){
       ? item.s + " " + item.m
       : (lead ? lead + " " + item.m.replace(/^…\s*/, "") : item.m);
     box.appendChild(el("div", "rev",
-      '<div class="rq">' + (k+1) + ". " + esc(item.s) + (item.complete ? " …" : "") + "</div>" +
-      '<div class="ra' + (answers[k] ? "" : " skipped") + '">' + esc(mine) + "</div>" +
-      '<div class="model"><b>Model:</b> ' + esc(model) + "</div>"));
+      '<div class="rq"' + (item.lang === "bn" ? ' lang="bn"' : "") + ">" + (k+1) + ". " + esc(item.s) + (item.complete ? " —" : "") + "</div>" +
+      '<div class="ra' + (answers[k] ? "" : " skipped") + '"' + (item.lang === "bn" ? ' lang="bn"' : "") + ">" + esc(mine) + "</div>" +
+      '<div class="model"' + (item.lang === "bn" ? ' lang="bn"' : "") + '><b>Model:</b> ' + esc(model) + "</div>"));
   });
   store.set("srt.sets", store.get("srt.sets", 0) + 1);
   window.scrollTo(0,0);
@@ -231,11 +264,13 @@ $("again").onclick = () => {
   $("doneLine").textContent = "You have completed " + store.get("srt.sets",0) + " SRT set(s) on this device.";
 };
 $("print").onclick = () => window.print();
-$("kind").onchange = () => {
-  const n = bankFor($("kind").value).length;
-  $("doneLine").textContent = n + " items available in this type.";
-};
-$("kind").onchange();
+function refreshCount(){
+  const n = bankFor($("kind").value, $("lang").value).length;
+  $("doneLine").textContent = n + " items available in this selection.";
+}
+$("kind").onchange = refreshCount;
+$("lang").onchange = refreshCount;
+refreshCount();
 
 const done = store.get("srt.sets", 0);
 if (done) $("doneLine").textContent = "You have completed " + done + " SRT set(s) on this device.";
