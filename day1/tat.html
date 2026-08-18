@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAT — Thematic Apperception Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180605d">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180607e">
 <style>
 .pic{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#8f8f8f;aspect-ratio:3/2}
-.pic svg{display:block;width:100%;height:100%;filter:grayscale(1) blur(3px) contrast(1.1)}
+.pic svg{display:block;width:100%;height:100%;filter:grayscale(1) blur(15px) contrast(1.1)}
 .pic.sharp svg{filter:grayscale(1) contrast(1.05)}
 .blankslide{position:absolute;inset:0;background:#e9e6de;display:grid;place-items:center;text-align:center;padding:24px;
   color:#5c5c5c;font-size:15px;letter-spacing:1px}
@@ -16,6 +16,8 @@
 .timerbox .timer{font-size:38px}
 .timerbox .what{font-size:16px;color:var(--ink-2);line-height:1.5}
 .slidecount{font-weight:700;letter-spacing:.4px}
+.slider{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink-2)}
+.slider input[type=range]{width:150px}
 .story textarea{min-height:210px;font-size:17px}
 .hidden{display:none}
 .rev{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card-2);margin-top:12px}
@@ -41,6 +43,10 @@
         <option value="6">Short set — 5 pictures + 1 blank</option>
         <option value="3">Quick practice — 2 pictures + 1 blank</option>
       </select>
+    </div>
+    <div class="field">
+      <label for="blur">Haziness</label>
+      <div class="slider"><input type="range" id="blur" min="1" max="24" value="15"><span id="blurVal">15 px</span></div>
     </div>
     <div class="field">
       <label for="write">Writing time per slide</label>
@@ -97,14 +103,23 @@
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180605d"></script>
-<script src="../assets/js/ppdt-scenes.js?v=202608180605d"></script>
+<script src="../assets/js/core.js?v=202608180607e"></script>
+<script src="../assets/js/ppdt-scenes.js?v=202608180607e"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store, shuffle} = ISSB;
 ISSB.mountHeader("TAT — Thematic Apperception Test", "11 pictures + 1 blank · 30s look, 4 min write", "../index.html");
 
 const VIEW = 30;
+
+function applyBlur(){
+  const svg = $("picBox").querySelector("svg");
+  if (svg) svg.style.filter = "grayscale(1) blur(" + $("blur").value + "px) contrast(1.1)";
+}
+$("blur").oninput = () => {
+  $("blurVal").textContent = $("blur").value + " px";
+  applyBlur();
+};
 let slides = [], i = 0, phase = 0, clock = null, writeSecs = 240, stories = [];
 
 $("begin").onclick = start;
@@ -134,6 +149,7 @@ function runSlide(){
   $("slideNo").textContent = "Slide " + (i+1) + " / " + slides.length;
   if (s){
     $("picSvg").innerHTML = s.svg();
+    applyBlur();
     $("blank").classList.add("hidden");
   } else {
     $("picSvg").innerHTML = "";
