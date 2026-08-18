@@ -444,9 +444,19 @@
     { name: "Logical Deduction",     curated: ["Logical Deduction"] },
   ];
 
+  /* The board's paper is about half non-verbal, so the batch is built to that
+     shape: 20 verbal categories at 3 each (60) and 8 non-verbal at 5 each (40). */
+  const NONVERBAL = [
+    "Figure Series", "Mirror Image", "Odd Figure Out", "Figure Analogy",
+    "Counting Figures", "Dice", "Paper Folding", "Number Matrix",
+  ];
+  NONVERBAL.forEach((name) => CATEGORIES.push({ name: name, nonverbal: true }));
+
   const BATCH_COUNT = 24;   // raise to add more batches — nothing else changes
-  const PER_CAT = 5;        // questions per category, per batch
-  const BATCH_SIZE = CATEGORIES.length * PER_CAT;   // 20 × 5 = 100
+  const PER_CAT = 3;        // per verbal category
+  const PER_NV = 5;         // per non-verbal category
+  const BATCH_SIZE = 100;
+  const quotaFor = (cat) => (cat.nonverbal ? PER_NV : PER_CAT);
 
   function curatedPool(names) {
     const all = global.IQ_CURATED || [];
@@ -477,16 +487,28 @@
 
     CATEGORIES.forEach((cat) => {
       let taken = 0;
+      const want = quotaFor(cat);
+
+      if (cat.nonverbal) {
+        const make = (global.IQ_NONVERBAL || {})[cat.name];
+        let guard = 0;
+        while (make && taken < want && guard < 400) {
+          guard++;
+          const q = make(rng);
+          if (q && q.answerIndex >= 0 && push(q)) taken++;
+        }
+        return;
+      }
 
       // curated share first (rotated by batch so batches don't repeat each other)
       if (cat.curated) {
         const pool = curatedPool(cat.curated);
-        const want = cat.gen ? Math.min(cat.curatedShare || PER_CAT, PER_CAT) : PER_CAT;
+        const share = cat.gen ? Math.min(cat.curatedShare || want, want) : want;
         if (pool.length) {
-          const offset = (n * want) % pool.length;
+          const offset = (n * share) % pool.length;
           const rotated = pool.slice(offset).concat(pool.slice(0, offset));
           for (const item of rotated) {
-            if (taken >= want) break;
+            if (taken >= share) break;
             if (push(fromCurated(item, cat.name, rng))) taken++;
           }
         }
@@ -495,7 +517,7 @@
       // generators make up the rest
       if (cat.gen) {
         let guard = 0;
-        while (taken < PER_CAT && guard < 400) {
+        while (taken < want && guard < 400) {
           guard++;
           const q = pick(rng, cat.gen)(rng);
           q.cat = cat.name;
@@ -504,10 +526,10 @@
       }
 
       // last resort: a short curated pool that could not fill its quota
-      if (taken < PER_CAT && cat.curated) {
+      if (taken < want && cat.curated) {
         const pool = curatedPool(cat.curated);
         for (const item of pool) {
-          if (taken >= PER_CAT) break;
+          if (taken >= want) break;
           if (push(fromCurated(item, cat.name, rng))) taken++;
         }
       }
@@ -516,5 +538,5 @@
     return seededShuffle(out, rng);
   }
 
-  global.IQGen = { buildBatch, BATCH_COUNT, BATCH_SIZE, PER_CAT, CATEGORIES };
+  global.IQGen = { buildBatch, BATCH_COUNT, BATCH_SIZE, PER_CAT, PER_NV, quotaFor, CATEGORIES };
 })(window);

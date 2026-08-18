@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Self test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180728p">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180757q">
 <style>
 .line{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
 .pass{color:var(--ok);font-weight:700}.fail{color:var(--danger);font-weight:700}
@@ -21,13 +21,14 @@ pre{white-space:pre-wrap;font-size:12px;color:var(--ink-2)}
   <pre id="detail"></pre>
 </div>
 </div>
-<script src="../assets/js/core.js?v=202608180728p"></script>
-<script src="../assets/js/iq-curated.js?v=202608180728p"></script>
-<script src="../assets/js/iq-gen.js?v=202608180728p"></script>
-<script src="../assets/js/wat-words.js?v=202608180728p"></script>
-<script src="../assets/js/ppdt-scenes.js?v=202608180728p"></script>
-<script src="../assets/js/srt-bank.js?v=202608180728p"></script>
-<script src="../assets/js/topics.js?v=202608180728p"></script>
+<script src="../assets/js/core.js?v=202608180757q"></script>
+<script src="../assets/js/iq-curated.js?v=202608180757q"></script>
+<script src="../assets/js/iq-nonverbal.js"></script>
+<script src="../assets/js/iq-gen.js?v=202608180757q"></script>
+<script src="../assets/js/wat-words.js?v=202608180757q"></script>
+<script src="../assets/js/ppdt-scenes.js?v=202608180757q"></script>
+<script src="../assets/js/srt-bank.js?v=202608180757q"></script>
+<script src="../assets/js/topics.js?v=202608180757q"></script>
 <script>
 const out = document.getElementById("out"), detail = document.getElementById("detail");
 let failures = [];
@@ -48,7 +49,7 @@ check("Curated bank has items with 4 options each", () => {
 });
 
 for (let n = 1; n <= IQGen.BATCH_COUNT; n++){
-  check("Batch " + n + ": 100 questions, 5 per category, valid keys", () => {
+  check("Batch " + n + ": 100 questions, quota per category, valid keys", () => {
     const b = IQGen.buildBatch(n);
     if (b.length !== IQGen.BATCH_SIZE) return "length " + b.length;
     const keys = b.map(q => q.q + " ¦ " + [...q.options].sort().join("|"));
@@ -57,7 +58,8 @@ for (let n = 1; n <= IQGen.BATCH_COUNT; n++){
     b.forEach(q => tally[q.cat] = (tally[q.cat] || 0) + 1);
     if (Object.keys(tally).length !== IQGen.CATEGORIES.length) return "categories: " + Object.keys(tally).length;
     for (const c of IQGen.CATEGORIES){
-      if (tally[c.name] !== IQGen.PER_CAT) return c.name + " = " + tally[c.name];
+      const want = IQGen.quotaFor(c);
+      if (tally[c.name] !== want) return c.name + " = " + tally[c.name] + ", wanted " + want;
     }
     for (const q of b){
       if (!Array.isArray(q.options) || q.options.length !== 4) return "option count: " + q.q;
@@ -68,6 +70,14 @@ for (let n = 1; n <= IQGen.BATCH_COUNT; n++){
     return true;
   });
 }
+
+check("Every batch carries the non-verbal half", () => {
+  const b = IQGen.buildBatch(3);
+  const nv = b.filter(q => q.render === "svg");
+  if (nv.length !== 40) return "non-verbal count " + nv.length;
+  const bad = nv.filter(q => !/<svg /.test(q.options[0]) && !/^[0-9]+$/.test(q.options[0]));
+  return bad.length === 0 || bad.length + " figure items have unusable options";
+});
 
 check("Batches are deterministic", () => {
   const a = IQGen.buildBatch(5).map(q => q.q + "|" + q.options[q.answerIndex]).join("§");

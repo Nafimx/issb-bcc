@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Screening 1 — IQ Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180728p">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180757q">
 <style>
 .setup .grid-2{margin:14px 0 18px}
 .topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
@@ -42,6 +42,13 @@
 .rev .ra{font-size:16px;line-height:1.6}
 .rev .ok{color:var(--ok)}.rev .no{color:var(--danger)}
 .rev .why{margin-top:7px;font-size:15px;color:var(--ink-2)}
+.figrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.figrow svg{background:var(--bg-2);border-radius:8px}
+.qmark{font-size:22px;font-weight:800;color:var(--ink-2)}
+.opt svg{background:var(--bg-2);border-radius:8px}
+.numgrid{border-collapse:collapse;margin-top:12px}
+.numgrid td{border:1px solid var(--line-2);padding:10px 16px;text-align:center;font-size:19px;font-weight:600;min-width:46px}
+.numgrid td.q{color:var(--accent-2)}
 .hidden{display:none}
 @media(max-width:620px){
   .topbar{gap:8px;padding:8px 0 10px}
@@ -59,7 +66,7 @@
   <!-- setup -->
   <section id="setup" class="card setup">
     <h2>Screening 1 &mdash; IQ Test</h2>
-    <p class="muted small">Each batch has exactly 100 questions. Every batch carries exactly 5 questions from each of the 20 screening categories, and a batch number always gives the same set of questions — so you can compare your score with a friend on the same batch.</p>
+    <p class="muted small">Each batch has exactly 100 questions built to the shape of the board&rsquo;s paper: <b>60 verbal and numerical</b> across 20 categories and <b>40 non-verbal</b> — figure series, mirror images, odd figure out, figure analogy, counting figures, dice, paper folding and number matrices. A batch number always gives the same paper, so you can compare your score with a friend on the same batch.</p>
     <div class="grid-2">
       <div class="field">
         <label for="batch">Batch</label>
@@ -121,7 +128,7 @@
     </div>
     <div class="card" style="margin-top:16px">
       <h3>Category breakdown</h3>
-      <p class="small muted" style="margin:0 0 10px">Five questions from each category in every batch.</p>
+      <p class="small muted" style="margin:0 0 10px">Three questions from each verbal category and five from each non-verbal category, in every batch.</p>
       <div id="cats"></div>
     </div>
     <div class="card" style="margin-top:16px">
@@ -133,9 +140,10 @@
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180728p"></script>
-<script src="../assets/js/iq-curated.js?v=202608180728p"></script>
-<script src="../assets/js/iq-gen.js?v=202608180728p"></script>
+<script src="../assets/js/core.js?v=202608180757q"></script>
+<script src="../assets/js/iq-curated.js?v=202608180757q"></script>
+<script src="../assets/js/iq-nonverbal.js?v=202608180757q"></script>
+<script src="../assets/js/iq-gen.js?v=202608180757q"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store} = ISSB;
@@ -211,14 +219,14 @@ function render(){
   const q = questions[cur];
   $("qno").textContent = "Batch " + batchNo + " · Q " + (cur+1) + " / " + questions.length;
   $("cat").textContent = q.cat;
-  $("qtext").textContent = q.q;
+  if (q.render === "svg") $("qtext").innerHTML = q.q; else $("qtext").textContent = q.q;
   $("bar").style.transform = "scaleX(" + ((cur+1)/questions.length) + ")";
   $("flag").textContent = flags[cur] ? "★ Marked" : "☆ Review";
   const box = $("opts");
   box.innerHTML = "";
   q.options.forEach((o, i) => {
     const b = el("button", "opt" + (answers[cur] === i ? " sel" : ""),
-      '<span class="key">' + KEYS[i] + '</span><span>' + esc(o) + '</span>');
+      '<span class="key">' + KEYS[i] + '</span><span>' + (q.render === "svg" ? o : esc(o)) + '</span>');
     b.onclick = () => { answers[cur] = i; paintPalette(); render(); };
     box.appendChild(b);
   });
@@ -303,9 +311,10 @@ function submit(){
     const ok = answers[i] === q.answerIndex;
     const given = answers[i] > -1 ? q.options[answers[i]] : "not answered";
     rev.appendChild(el("div", "rev",
-      '<div class="rq">' + (i+1) + ". " + esc(q.q) + "</div>" +
-      '<div class="ra"><span class="' + (ok ? "ok" : "no") + '">Your answer: ' + esc(given) + "</span><br>" +
-      "<b>Correct: " + esc(q.options[q.answerIndex]) + "</b></div>" +
+      '<div class="rq">' + (i+1) + ". " + (q.render === "svg" ? q.q : esc(q.q)) + "</div>" +
+      '<div class="ra"><span class="' + (ok ? "ok" : "no") + '">Your answer: ' +
+      (q.render === "svg" ? (answers[i] > -1 ? given : "not answered") : esc(given)) + "</span><br>" +
+      "<b>Correct: " + (q.render === "svg" ? q.options[q.answerIndex] : esc(q.options[q.answerIndex])) + "</b></div>" +
       (q.explain ? '<div class="why">' + esc(q.explain) + "</div>" : "")));
   });
   window.scrollTo(0,0);
