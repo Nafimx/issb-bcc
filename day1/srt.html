@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SRT — Situation Reaction Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180702j">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180709k">
 <style>
 .topbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -40,10 +40,18 @@
 
 <section id="setup" class="card">
   <h2>Situation Reaction Test</h2>
-  <p class="muted small">Sixty situations, thirty minutes — about thirty seconds each. Each item is an <b>incomplete sentence that you finish</b>: most trail off on a lead-in such as &ldquo;He…&rdquo; or &ldquo;so he…&rdquo;, and a few are complete statements where you write the whole reaction. Write what you would <b>do</b>, not what you would feel. One line is enough: act first, then inform, then follow up. The clock runs for the whole set, so do not stall on one situation.</p>
+  <p class="muted small">Every item is an <b>incomplete sentence and you finish it</b>, in the form used by HSC completing sentences — a clause left hanging on a connector such as <i>lest, so that, no sooner&hellip;than, it is high time, unless</i>. Keep the grammar correct and the content officer-like: act first, then inform, then follow up. About thirty seconds each, and the clock runs for the whole set, so do not stall on one item.</p>
   <div class="grid-2" style="margin:16px 0">
     <div class="field">
-      <label for="count">Situations</label>
+      <label for="kind">Question type</label>
+      <select id="kind">
+        <option value="complete" selected>Completing sentences</option>
+        <option value="mixed">Mixed — completing sentences and situations</option>
+        <option value="situation">Situations only</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="count">Questions</label>
       <select id="count">
         <option value="60" selected>60 (standard set)</option>
         <option value="30">30 (half set)</option>
@@ -105,8 +113,9 @@
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180702j"></script>
-<script src="../assets/js/srt-bank.js?v=202608180702j"></script>
+<script src="../assets/js/core.js?v=202608180709k"></script>
+<script src="../assets/js/srt-completing.js?v=202608180709k"></script>
+<script src="../assets/js/srt-bank.js?v=202608180709k"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store, shuffle} = ISSB;
@@ -116,9 +125,18 @@ let set = [], answers = [], cur = 0, clock = null;
 
 $("begin").onclick = start;
 
+function bankFor(kind){
+  const complete = (window.SRT_COMPLETING || []).map(x => ({ s: x.s, m: x.m, complete: true }));
+  const situations = (window.SRT_BANK || []).map(x => ({ s: x.s, m: x.m, complete: false }));
+  if (kind === "complete") return complete.length ? complete : situations;
+  if (kind === "situation") return situations;
+  return shuffle(complete).slice(0, Math.ceil(complete.length / 2))
+    .concat(shuffle(situations).slice(0, Math.ceil(situations.length / 2)));
+}
+
 function start(){
   const n = Number($("count").value);
-  set = shuffle(SRT_BANK).slice(0, n);
+  set = shuffle(bankFor($("kind").value)).slice(0, n);
   answers = new Array(set.length).fill("");
   cur = 0;
   $("setup").classList.add("hidden");
@@ -153,12 +171,13 @@ function leadOf(text){
 }
 
 function render(){
+  const item = set[cur];
   $("qno").textContent = (cur+1) + " / " + set.length;
-  $("sit").textContent = set[cur].s;
-  const lead = leadOf(set[cur].s);
+  $("sit").textContent = item.complete ? item.s + " …" : item.s;
+  const lead = item.complete ? "" : leadOf(item.s);
   $("lead").textContent = lead ? lead + " …" : "";
-  $("ansLabel").textContent = lead ? "Finish the sentence" : "Your reaction";
-  $("ans").placeholder = lead ? "…what he did next." : "What he did.";
+  $("ansLabel").textContent = item.complete ? "Complete the sentence" : (lead ? "Finish the sentence" : "Your reaction");
+  $("ans").placeholder = item.complete ? "…the rest of the sentence." : (lead ? "…what he did next." : "What he did.");
   $("ans").value = answers[cur];
   $("bar").style.transform = "scaleX(" + ((cur+1)/set.length) + ")";
   $("prev").disabled = cur === 0;
@@ -189,14 +208,18 @@ function submit(){
   const box = $("revList");
   box.innerHTML = "";
   set.forEach((item, k) => {
-    const lead = leadOf(item.s);
+    const lead = item.complete ? "" : leadOf(item.s);
+    const stem = item.complete ? item.s + " " : "";
     const mine = answers[k]
-      ? (lead ? lead + " " + answers[k] : answers[k])
+      ? stem + (lead ? lead + " " : "") + answers[k]
       : "— not attempted —";
+    const model = item.complete
+      ? item.s + " " + item.m
+      : (lead ? lead + " " + item.m.replace(/^…\s*/, "") : item.m);
     box.appendChild(el("div", "rev",
-      '<div class="rq">' + (k+1) + ". " + esc(item.s) + "</div>" +
+      '<div class="rq">' + (k+1) + ". " + esc(item.s) + (item.complete ? " …" : "") + "</div>" +
       '<div class="ra' + (answers[k] ? "" : " skipped") + '">' + esc(mine) + "</div>" +
-      '<div class="model"><b>Model:</b> ' + esc(lead ? lead + " " + item.m.replace(/^…\s*/, "") : item.m) + "</div>"));
+      '<div class="model"><b>Model:</b> ' + esc(model) + "</div>"));
   });
   store.set("srt.sets", store.get("srt.sets", 0) + 1);
   window.scrollTo(0,0);
@@ -208,6 +231,11 @@ $("again").onclick = () => {
   $("doneLine").textContent = "You have completed " + store.get("srt.sets",0) + " SRT set(s) on this device.";
 };
 $("print").onclick = () => window.print();
+$("kind").onchange = () => {
+  const n = bankFor($("kind").value).length;
+  $("doneLine").textContent = n + " items available in this type.";
+};
+$("kind").onchange();
 
 const done = store.get("srt.sets", 0);
 if (done) $("doneLine").textContent = "You have completed " + done + " SRT set(s) on this device.";
