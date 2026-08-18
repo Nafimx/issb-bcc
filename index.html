@@ -6,7 +6,7 @@
 <title>ISSB Prep — Barishal Cadet College</title>
 <meta name="description" content="ISSB Day-1 preparation for the polapan of Barishal Cadet College: IQ screening, PPDT and Word Association practice.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/app.css?v=202608180817s">
+<link rel="stylesheet" href="assets/css/app.css?v=202608180821t">
 <style>
 .hero{text-align:center;padding:10px 0 26px}
 .hero h2{font-size:clamp(26px,5.5vw,38px);margin:0 0 10px;letter-spacing:-.5px}
@@ -25,34 +25,15 @@
 .tile.locked{opacity:.5;pointer-events:none;filter:saturate(.4)}
 .stat{font-size:14px;color:var(--ink-3)}
 .note{margin-top:32px;font-size:15px;color:var(--ink-3);line-height:1.6;text-align:center}
-.banner{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:baseline;text-align:center;
-  padding:14px 18px;border:1px solid rgba(126,162,98,.45);background:rgba(126,162,98,.12);
-  border-radius:12px;line-height:1.55;margin-bottom:8px}
-.banner b{color:var(--accent-2)}
-.banner span{color:var(--ink-2)}
 </style>
 </head>
 <body>
-
-<div class="modal hidden" id="notice" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
-  <div class="modal-card">
-    <h2 id="noticeTitle">Before you start</h2>
-    <p><span class="rec">Recommended &mdash; IQ, WAT, SRT.</span></p>
-    <p>Other segments are in the process for making better.</p>
-    <button id="noticeOk">Got it</button>
-  </div>
-</div>
 
 <div class="wrap">
 
   <div class="hero">
     <h2>ISSB Mock for the Polapains of Cadet Colleges</h2>
     <p>Practice the IQ test, PPDT, WAT &amp; so on exactly the way they are run on the ISSB &mdash; timed, unassisted, one attempt at a time.</p>
-  </div>
-
-  <div class="banner">
-    <b>Recommended &mdash; IQ, WAT, SRT.</b>
-    <span>Other segments are in the process for making better.</span>
   </div>
 
   <div class="section"><h3>Day 1 &mdash; Screening (First Segment)</h3><div class="line"></div></div>
@@ -134,28 +115,9 @@
   <p class="note">Built for the cadets and ex-cadets preparing for BMA. Everything runs in your browser &mdash; nothing is uploaded, and your attempts are stored only on this device.</p>
 </div>
 
-<script src="assets/js/core.js?v=202608180817s"></script>
+<script src="assets/js/core.js?v=202608180821t"></script>
 <script>
 ISSB.mountHeader("ISSB Prep — Barishal Cadet College");
-
-/* Which drills are ready. Shown once per browser session — a permanent
-   dismissal meant a cadet who closed it once could never find it again. */
-(function(){
-  const notice = ISSB.$("notice");
-  ISSB.store.del("notice.seen");            // clear the old permanent flag
-  let seen = false;
-  try { seen = sessionStorage.getItem("issb.notice") === "1"; } catch (e) {}
-  if (seen) return;
-  notice.classList.remove("hidden");
-  const close = () => {
-    notice.classList.add("hidden");
-    try { sessionStorage.setItem("issb.notice", "1"); } catch (e) {}
-  };
-  ISSB.$("noticeOk").onclick = close;
-  notice.addEventListener("click", (e) => { if (e.target === notice) close(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
-  setTimeout(() => ISSB.$("noticeOk").focus(), 30);
-})();
 
 
 const iq = ISSB.store.get("iq.best", {});
