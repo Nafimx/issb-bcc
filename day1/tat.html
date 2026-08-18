@@ -5,11 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TAT — Thematic Apperception Test | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180630g">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180650h">
 <style>
 .pic{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#8f8f8f;aspect-ratio:3/2}
 .pic svg{display:block;width:100%;height:100%;filter:grayscale(1) blur(15px) contrast(1.1)}
 .pic.sharp svg{filter:grayscale(1) contrast(1.05)}
+.pic img{display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1) blur(15px) contrast(1.1)}
+.pic.sharp img{filter:grayscale(1) contrast(1.05)}
+
 .blankslide{position:absolute;inset:0;background:#e9e6de;display:grid;place-items:center;text-align:center;padding:24px;
   color:#5c5c5c;font-size:15px;letter-spacing:1px}
 .timerbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:14px}
@@ -24,7 +27,7 @@
 .rev .rt{font-weight:700;margin-bottom:6px}
 .rev .rs{line-height:1.65;white-space:pre-wrap}
 .revpic{width:150px;flex:none;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#8f8f8f}
-.revpic svg{display:block;width:100%;height:auto;filter:grayscale(1) contrast(1.05)}
+.revpic svg,.revpic img{display:block;width:100%;height:auto;filter:grayscale(1) contrast(1.05)}
 .revrow{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
 .revrow .rtext{flex:1;min-width:220px}
 </style>
@@ -103,18 +106,34 @@
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180630g"></script>
-<script src="../assets/js/ppdt-scenes.js?v=202608180630g"></script>
+<script src="../assets/js/core.js?v=202608180650h"></script>
+<script src="../assets/js/ppdt-pictures.js?v=202608180650h"></script>
+<script src="../assets/js/ppdt-scenes.js?v=202608180650h"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store, shuffle} = ISSB;
 ISSB.mountHeader("TAT — Thematic Apperception Test", "11 pictures + 1 blank · 30s look, 4 min write", "../index.html");
 
 const VIEW = 30;
+let PICS = [];
+PPDT_PICTURES.load("../").then(list => { PICS = list; });
+
+function renderPicture(host, pic){
+  host.innerHTML = "";
+  if (!pic) return;
+  if (pic.kind === "img"){
+    const img = new Image();
+    img.src = pic.src;
+    img.alt = "A deliberately hazy picture. Write a story on what you make out.";
+    host.appendChild(img);
+  } else {
+    host.innerHTML = pic.svg();
+  }
+}
 
 function applyBlur(){
-  const svg = $("picBox").querySelector("svg");
-  if (svg) svg.style.filter = "grayscale(1) blur(" + $("blur").value + "px) contrast(1.1)";
+  const node = $("picBox").querySelector("svg, img");
+  if (node) node.style.filter = "grayscale(1) blur(" + $("blur").value + "px) contrast(1.1)";
 }
 $("blur").oninput = () => {
   $("blurVal").textContent = $("blur").value + " px";
@@ -127,7 +146,8 @@ $("begin").onclick = start;
 function start(){
   const n = Number($("count").value);
   writeSecs = Number($("write").value);
-  slides = shuffle(PPDT_SCENES).slice(0, n - 1).concat([null]);   // null = the blank slide
+  if (!PICS.length){ alert("Pictures are still loading — try again in a moment."); return; }
+  slides = shuffle(PICS).slice(0, n - 1).concat([null]);   // null = the blank slide
   stories = new Array(slides.length).fill("");
   i = 0; phase = 0;
   $("setup").classList.add("hidden");
@@ -148,7 +168,7 @@ function runSlide(){
   const s = slides[i];
   $("slideNo").textContent = "Slide " + (i+1) + " / " + slides.length;
   if (s){
-    $("picSvg").innerHTML = s.svg();
+    renderPicture($("picSvg"), s);
     applyBlur();
     $("blank").classList.add("hidden");
   } else {
@@ -195,7 +215,7 @@ function finish(){
     const d = el("div", "rev");
     d.innerHTML =
       '<div class="revrow">' +
-      '<div class="revpic">' + (s ? s.svg() : '<div style="padding:30px 10px;text-align:center;color:#555;font-size:12px">BLANK SLIDE</div>') + "</div>" +
+      '<div class="revpic">' + (s ? (s.kind === "img" ? '<img src="' + s.src + '" alt="">' : s.svg()) : '<div style="padding:30px 10px;text-align:center;color:#555;font-size:12px">BLANK SLIDE</div>') + "</div>" +
       '<div class="rtext"><div class="rt">Slide ' + (k+1) + " · " + words + " words</div>" +
       '<div class="rs">' + esc(stories[k] || "— not written —") + "</div></div></div>";
     box.appendChild(d);

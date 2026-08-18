@@ -5,11 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Screening 2 — PPDT | ISSB Prep</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/css/app.css?v=202608180630g">
+<link rel="stylesheet" href="../assets/css/app.css?v=202608180650h">
 <style>
 .pic{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#8f8f8f;aspect-ratio:3/2}
 .pic svg{display:block;width:100%;height:100%;filter:grayscale(1) blur(15px) contrast(1.1)}
 .pic.sharp svg{filter:grayscale(1) contrast(1.05)}
+.pic img{display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1) blur(15px) contrast(1.1)}
+.pic.sharp img{filter:grayscale(1) contrast(1.05)}
+
 .pic .veil{position:absolute;inset:0;display:grid;place-items:center;align-content:center;background:rgba(16,21,18,.92);
   text-align:center;padding:20px;gap:8px}
 .pic .veil.hidden{display:none}
@@ -51,11 +54,17 @@
     <div class="field">
       <label for="pic">Picture</label>
       <select id="pic"><option value="0">Random picture</option></select>
+      <div class="small muted" id="picSource" style="margin-top:6px"></div>
     </div>
     <div class="field">
       <label for="blur">Haziness</label>
       <div class="slider"><input type="range" id="blur" min="1" max="24" value="15"><span id="blurVal">15 px</span></div>
     </div>
+  </div>
+  <div class="row" style="margin-bottom:12px">
+    <label class="btn secondary" for="picFiles" style="cursor:pointer">Add your own pictures</label>
+    <input type="file" id="picFiles" accept="image/*" multiple class="sr-only">
+    <button id="picClear" class="ghost">Remove mine</button>
   </div>
   <div class="row"><button id="begin">Start PPDT</button>
     <a class="btn secondary" href="../index.html" style="text-decoration:none">Dashboard</a></div>
@@ -142,8 +151,9 @@
 
 </div>
 
-<script src="../assets/js/core.js?v=202608180630g"></script>
-<script src="../assets/js/ppdt-scenes.js?v=202608180630g"></script>
+<script src="../assets/js/core.js?v=202608180650h"></script>
+<script src="../assets/js/ppdt-pictures.js?v=202608180650h"></script>
+<script src="../assets/js/ppdt-scenes.js?v=202608180650h"></script>
 <script>
 (function(){
 const {$, el, esc, Countdown, fmtClock, store} = ISSB;
@@ -157,7 +167,44 @@ const PHASES = [
 ];
 
 const sel = $("pic");
-PPDT_SCENES.forEach(s => { const o = el("option", null, "Picture " + s.id); o.value = s.id; sel.appendChild(o); });
+let PICS = [];
+
+function fillPicList(){
+  sel.length = 1;
+  PICS.forEach((p, i) => { const o = el("option", null, "Picture " + (i + 1)); o.value = String(i + 1); sel.appendChild(o); });
+  const own = PICS.filter(p => p.id.indexOf("own-") === 0).length;
+  const plates = PICS.filter(p => p.id.indexOf("plate-") === 0).length;
+  $("picSource").textContent = PICS.length
+    ? PICS.length + " pictures — " + (own ? own + " of your own" : "") + (own && plates ? ", " : "") +
+      (plates ? plates + " from the site" : "") + (!own && !plates ? "drawn practice scenes" : "")
+    : "No pictures loaded.";
+}
+
+function loadPics(){
+  return PPDT_PICTURES.load("../").then(list => { PICS = list; fillPicList(); });
+}
+loadPics();
+
+$("picFiles").onchange = (e) => {
+  if (!e.target.files.length) return;
+  PPDT_PICTURES.addLocalPics(e.target.files).then(() => loadPics()).then(() => {
+    $("picSource").textContent += " · added";
+  });
+};
+$("picClear").onclick = () => PPDT_PICTURES.clearLocalPics().then(loadPics);
+
+function renderPicture(host, pic){
+  host.innerHTML = "";
+  if (!pic) return;
+  if (pic.kind === "img"){
+    const img = new Image();
+    img.src = pic.src;
+    img.alt = "A deliberately hazy picture. Describe what you can make out.";
+    host.appendChild(img);
+  } else {
+    host.innerHTML = pic.svg();
+  }
+}
 
 $("blur").oninput = () => {
   $("blurVal").textContent = $("blur").value + " px";
@@ -165,8 +212,8 @@ $("blur").oninput = () => {
   applyBlur();
 };
 function applyBlur(){
-  const svg = $("picBox").querySelector("svg");
-  if (svg) svg.style.filter = "grayscale(1) blur(" + $("blur").value + "px) contrast(1.1)";
+  const node = $("picBox").querySelector("svg, img");
+  if (node) node.style.filter = "grayscale(1) blur(" + $("blur").value + "px) contrast(1.1)";
 }
 
 const done = store.get("ppdt.count", 0);
@@ -198,10 +245,10 @@ $("addChar").onclick = addChar;
 $("begin").onclick = startPpdt;
 
 function startPpdt(){
+  if (!PICS.length){ $("status") && null; alert("No pictures are loaded yet."); return; }
   const chosen = Number(sel.value);
-  scene = chosen ? PPDT_SCENES.find(s => s.id === chosen)
-                 : PPDT_SCENES[Math.floor(Math.random() * PPDT_SCENES.length)];
-  $("picSvg").innerHTML = scene.svg();
+  scene = chosen ? PICS[chosen - 1] : PICS[Math.floor(Math.random() * PICS.length)];
+  renderPicture($("picSvg"), scene);
   applyBlur();
   resetChars();
   ["act1","act2","act3","title","story"].forEach(id => $(id).value = "");
@@ -250,9 +297,9 @@ function finish(){
   $("story").readOnly = true;
   $("test").classList.add("hidden");
   $("review").classList.remove("hidden");
-  $("picSvg2").innerHTML = scene.svg();
-  const svg = $("picBox2").querySelector("svg");
-  if (svg) svg.style.filter = "grayscale(1) contrast(1.05)";
+  renderPicture($("picSvg2"), scene);
+  const node = $("picBox2").querySelector("svg, img");
+  if (node) node.style.filter = "grayscale(1) contrast(1.05)";
   const words = ($("story").value.trim().match(/\S+/g) || []).length;
   const spot = [];
   for (let i = 1; i <= charN; i++) {
@@ -263,7 +310,7 @@ function finish(){
   const acts = [1, 2, 3].map(i => $("act" + i).value.trim()).filter(Boolean);
 
   $("recap").innerHTML =
-    '<div class="small muted" style="margin-bottom:8px">Picture ' + scene.id + "</div>" +
+    '<div class="small muted" style="margin-bottom:8px">Picture ' + (scene.label || scene.id) + "</div>" +
     '<div class="table-wrap"><table class="sheet-tbl">' +
     "<tr><th>Spot Box</th><th>Action Box</th></tr>" +
     '<tr><td><div style="display:flex;gap:22px;flex-wrap:wrap">' +
