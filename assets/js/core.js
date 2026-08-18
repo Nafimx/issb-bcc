@@ -168,7 +168,7 @@
   /* Self-heal a stale page. Browsers on slow mobile connections were holding an
      old copy of a drill and reporting it as broken. Each build carries a stamp;
      if the server is serving a newer one, reload once (guarded, never loops). */
-  const BUILD = "202608180713m";
+  const BUILD = "202608180723n";
   function checkBuild() {
     fetch("/assets/build.json", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
