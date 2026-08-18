@@ -44,6 +44,11 @@ a{color:var(--accent-2)}
 
 .build-stamp{width:100%;font-size:11px;letter-spacing:.6px;color:var(--ink-3);opacity:.6}
 
+/* Utility class: its whole job is to hide, so it must beat any later
+   display rule on the same element (a page-level .focus{display:flex}
+   declared after .hidden was covering the WAT page entirely). */
+.hidden{display:none!important}
+
 /* generic surfaces */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
 .muted{color:var(--ink-2)}
